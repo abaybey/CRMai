@@ -47,19 +47,19 @@ describe('Security & Multi-Tenant Authorization Tests', () => {
 
   describe('Store-Level Scope Isolation', () => {
     it('restricts Store Manager store list to their assigned boutique', () => {
-      // Diana Putri manages Plaza Indonesia
+      // Diana Putri manages Plaza Senayan
       retailDataStore.setCurrentProfile('20000000-0000-0000-0000-000000000002');
 
       const stores = retailDataStore.getStores();
       expect(stores.length).toBe(1);
-      expect(stores[0].code).toBe('ST-PI-01');
+      expect(stores[0].code).toBe('ST-PS-03');
     });
 
     it('allows Area Manager to query and switch across all stores', () => {
       retailDataStore.setCurrentProfile('20000000-0000-0000-0000-000000000001');
 
       const stores = retailDataStore.getStores();
-      expect(stores.length).toBe(3);
+      expect(stores.length).toBe(6);
     });
   });
 

@@ -48,6 +48,10 @@ export interface SalesDaily {
   target_amount?: number | null;
   transaction_count?: number | null;
   units_sold?: number | null;
+  walk_in_sales?: number | null;
+  clienteling_sales?: number | null;
+  appointment_sales?: number | null;
+  social_media_sales?: number | null;
   source_import_id?: string | null;
   created_at: string;
   updated_at?: string;
@@ -65,6 +69,10 @@ export interface Transaction {
   units: number;
   currency: string;
   status: 'completed' | 'refunded' | 'cancelled';
+  item_code?: string | null;
+  item_description?: string | null;
+  category?: string | null;
+  member_name?: string | null;
   source_import_id?: string | null;
   created_at: string;
 }

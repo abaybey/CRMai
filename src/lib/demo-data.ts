@@ -41,9 +41,36 @@ export const DEMO_STORES: Store[] = [
   {
     id: '10000000-0000-0000-0000-000000000003',
     organization_id: DEMO_ORGANIZATION.id,
-    code: 'ST-SC-03',
-    name: '[DEMO] Senayan City - Lounge',
+    code: 'ST-PS-03',
+    name: '[DEMO] Plaza Senayan - Boutique',
+    location: 'Level 1, Plaza Senayan, Jakarta Pusat',
+    active: true,
+    created_at: '2026-01-01T00:00:00Z',
+  },
+  {
+    id: '10000000-0000-0000-0000-000000000004',
+    organization_id: DEMO_ORGANIZATION.id,
+    code: 'ST-SC-04',
+    name: '[DEMO] Senayan City - Boutique',
     location: 'Level 1, Senayan City, Jakarta Selatan',
+    active: true,
+    created_at: '2026-01-01T00:00:00Z',
+  },
+  {
+    id: '10000000-0000-0000-0000-000000000005',
+    organization_id: DEMO_ORGANIZATION.id,
+    code: 'ST-PIM-05',
+    name: '[DEMO] Pondok Indah Mall - Boutique',
+    location: 'Ground Floor, PIM 2, Jakarta Selatan',
+    active: true,
+    created_at: '2026-01-01T00:00:00Z',
+  },
+  {
+    id: '10000000-0000-0000-0000-000000000006',
+    organization_id: DEMO_ORGANIZATION.id,
+    code: 'ST-KOKAS-06',
+    name: '[DEMO] Kota Kasablanka - Boutique',
+    location: 'Ground Floor, Kota Kasablanka, Jakarta',
     active: true,
     created_at: '2026-01-01T00:00:00Z',
   },
@@ -65,95 +92,117 @@ export const DEMO_PROFILES: Profile[] = [
     full_name: '[DEMO] Diana Putri',
     email: 'diana.putri@maisondeluxe.demo',
     role: 'store_manager',
-    store_id: '10000000-0000-0000-0000-000000000001',
+    store_id: '10000000-0000-0000-0000-000000000003', // Plaza Senayan
     active: true,
     created_at: '2026-01-01T00:00:00Z',
   },
   {
     id: '20000000-0000-0000-0000-000000000003',
     organization_id: DEMO_ORGANIZATION.id,
-    full_name: '[DEMO] Siti Rahma',
-    email: 'siti.rahma@maisondeluxe.demo',
+    full_name: '[DEMO] Muhamad Ridwan Saputra',
+    email: 'rdwansaputra@gmail.com',
     role: 'sales_associate',
-    store_id: '10000000-0000-0000-0000-000000000001',
+    store_id: '10000000-0000-0000-0000-000000000003', // Plaza Senayan
     active: true,
     created_at: '2026-01-01T00:00:00Z',
   },
   {
     id: '20000000-0000-0000-0000-000000000004',
     organization_id: DEMO_ORGANIZATION.id,
-    full_name: '[DEMO] Kevin Wijaya',
-    email: 'kevin.wijaya@maisondeluxe.demo',
+    full_name: '[DEMO] Keisha Suhendra',
+    email: 'keisha.suhendra@maisondeluxe.demo',
     role: 'sales_associate',
-    store_id: '10000000-0000-0000-0000-000000000001',
+    store_id: '10000000-0000-0000-0000-000000000003', // Plaza Senayan
     active: true,
     created_at: '2026-01-01T00:00:00Z',
   },
   {
     id: '20000000-0000-0000-0000-000000000005',
     organization_id: DEMO_ORGANIZATION.id,
-    full_name: '[DEMO] Michael Chen',
-    email: 'michael.chen@maisondeluxe.demo',
-    role: 'store_manager',
-    store_id: '10000000-0000-0000-0000-000000000002',
+    full_name: '[DEMO] Farah Khansa Nabilah',
+    email: 'farah.khansa@maisondeluxe.demo',
+    role: 'sales_associate',
+    store_id: '10000000-0000-0000-0000-000000000003', // Plaza Senayan
     active: true,
     created_at: '2026-01-01T00:00:00Z',
   },
 ];
 
-// Generate 30 days of realistic DSR data for October 2026 for each store
+// Generate 14 days of October 2026 DSR data matching the real luxury DSR figures from contohdsr
 export function generateDemoDsrData(): SalesDaily[] {
   const records: SalesDaily[] = [];
-  const baseTargetPI = 75_000_000;
-  const baseTargetPP = 60_000_000;
-  const baseTargetSC = 45_000_000;
+
+  // Actual daily net sales pattern extracted directly from TB Sales Closing Update (October sheet)
+  const piDailySales = [
+    72440000, 51700000, 64600000, 164000000, 34100000, 51900000, 24200000,
+    26200000, 56510000, 134510000, 67910000, 53750000, 29040000, 48200000,
+  ];
+
+  const psDailySales = [
+    90555000, 49750000, 72630000, 194250000, 82690000, 70540000, 13865000,
+    30680000, 53450000, 151600000, 84200000, 61500000, 39500000, 54200000,
+  ];
+
+  const scDailySales = [
+    35260000, 30620000, 58870000, 98490000, 48990000, 13400000, 62530000,
+    21500000, 41200000, 89500000, 38400000, 44200000, 18900000, 32100000,
+  ];
 
   for (let day = 1; day <= 14; day++) {
     const dayStr = day.toString().padStart(2, '0');
     const date = `2026-10-${dayStr}`;
 
-    // Plaza Indonesia (Achievement ~92%)
-    const piActual = Math.round((baseTargetPI * (0.85 + (day % 4) * 0.05)) / 1000) * 1000;
-    const piTx = Math.max(2, Math.round(piActual / 22_000_000));
+    // Plaza Indonesia (Target ~65M/day)
+    const piActual = piDailySales[day - 1] || 50000000;
+    const piTx = Math.max(2, Math.round(piActual / 18000000));
     records.push({
       id: `dsr-pi-${day}`,
       organization_id: DEMO_ORGANIZATION.id,
       store_id: DEMO_STORES[0].id,
       sales_date: date,
       net_sales: piActual,
-      target_amount: baseTargetPI,
+      target_amount: 65000000,
       transaction_count: piTx,
       units_sold: Math.round(piTx * 1.6),
+      walk_in_sales: Math.round(piActual * 0.55),
+      clienteling_sales: Math.round(piActual * 0.35),
+      appointment_sales: Math.round(piActual * 0.1),
       created_at: `${date}T22:00:00Z`,
     });
 
-    // Pacific Place (Achievement ~105% - Exceeding target)
-    const ppActual = Math.round((baseTargetPP * (0.95 + (day % 3) * 0.08)) / 1000) * 1000;
-    const ppTx = Math.max(2, Math.round(ppActual / 25_000_000));
+    // Plaza Senayan (Target ~75M/day)
+    const psActual = psDailySales[day - 1] || 60000000;
+    const psTx = Math.max(3, Math.round(psActual / 16500000));
     records.push({
-      id: `dsr-pp-${day}`,
-      organization_id: DEMO_ORGANIZATION.id,
-      store_id: DEMO_STORES[1].id,
-      sales_date: date,
-      net_sales: ppActual,
-      target_amount: baseTargetPP,
-      transaction_count: ppTx,
-      units_sold: Math.round(ppTx * 1.8),
-      created_at: `${date}T22:00:00Z`,
-    });
-
-    // Senayan City (Achievement ~78% - Needs Attention)
-    const scActual = Math.round((baseTargetSC * (0.70 + (day % 3) * 0.06)) / 1000) * 1000;
-    const scTx = Math.max(1, Math.round(scActual / 18_000_000));
-    records.push({
-      id: `dsr-sc-${day}`,
+      id: `dsr-ps-${day}`,
       organization_id: DEMO_ORGANIZATION.id,
       store_id: DEMO_STORES[2].id,
       sales_date: date,
+      net_sales: psActual,
+      target_amount: 75000000,
+      transaction_count: psTx,
+      units_sold: Math.round(psTx * 1.7),
+      walk_in_sales: Math.round(psActual * 0.5),
+      clienteling_sales: Math.round(psActual * 0.4),
+      appointment_sales: Math.round(psActual * 0.1),
+      created_at: `${date}T22:00:00Z`,
+    });
+
+    // Senayan City (Target ~45M/day)
+    const scActual = scDailySales[day - 1] || 35000000;
+    const scTx = Math.max(2, Math.round(scActual / 17000000));
+    records.push({
+      id: `dsr-sc-${day}`,
+      organization_id: DEMO_ORGANIZATION.id,
+      store_id: DEMO_STORES[3].id,
+      sales_date: date,
       net_sales: scActual,
-      target_amount: baseTargetSC,
+      target_amount: 45000000,
       transaction_count: scTx,
-      units_sold: Math.round(scTx * 1.2),
+      units_sold: Math.round(scTx * 1.3),
+      walk_in_sales: Math.round(scActual * 0.65),
+      clienteling_sales: Math.round(scActual * 0.25),
+      appointment_sales: Math.round(scActual * 0.1),
       created_at: `${date}T22:00:00Z`,
     });
   }
@@ -168,30 +217,30 @@ export const DEMO_CUSTOMERS: Customer[] = [
     customer_ref: 'CUST-001',
     full_name: '[DEMO] Ibu Clarissa Soeryadjaya',
     phone: '+628111223344',
-    birthday: '1988-10-18', // Upcoming in 5 days
+    birthday: '1988-10-18', // In 4 days
     consent_status: 'opted_in',
-    consent_source: 'In-store registration',
+    consent_source: 'Plaza Senayan Boutique registration',
     consent_updated_at: '2026-01-15T10:00:00Z',
     do_not_contact: false,
     tier: 'VIP',
     total_spend: 380_000_000,
-    last_purchase_date: '2026-08-20',
+    last_purchase_date: '2026-09-28',
     created_at: '2025-05-10T00:00:00Z',
   },
   {
     id: '30000000-0000-0000-0000-000000000002',
     organization_id: DEMO_ORGANIZATION.id,
     customer_ref: 'CUST-002',
-    full_name: '[DEMO] Ibu Michelle Tan',
+    full_name: '[DEMO] Ibu Nurul Nurul',
     phone: '+628129876543',
-    birthday: '1992-10-22', // Upcoming in 9 days
+    birthday: '1992-10-22',
     consent_status: 'opted_in',
-    consent_source: 'VIP Salon preview',
+    consent_source: 'VIP Salon preview (Plaza Senayan)',
     consent_updated_at: '2026-02-10T10:00:00Z',
     do_not_contact: false,
     tier: 'Platinum',
     total_spend: 195_000_000,
-    last_purchase_date: '2026-09-05',
+    last_purchase_date: '2026-09-01',
     created_at: '2025-08-14T00:00:00Z',
   },
   {
@@ -207,7 +256,7 @@ export const DEMO_CUSTOMERS: Customer[] = [
     do_not_contact: false,
     tier: 'VIP',
     total_spend: 420_000_000,
-    last_purchase_date: '2026-07-12',
+    last_purchase_date: '2026-08-12',
     created_at: '2024-11-01T00:00:00Z',
   },
   {
@@ -216,9 +265,9 @@ export const DEMO_CUSTOMERS: Customer[] = [
     customer_ref: 'CUST-004',
     full_name: '[DEMO] Ibu Felicia Anggoro',
     phone: '+628156677889',
-    birthday: '1995-10-15', // Upcoming in 2 days
+    birthday: '1995-10-15', // In 1 day
     consent_status: 'opted_in',
-    consent_source: 'Website concierge',
+    consent_source: 'Plaza Senayan concierge',
     consent_updated_at: '2026-04-12T10:00:00Z',
     do_not_contact: false,
     tier: 'Gold',
@@ -233,7 +282,7 @@ export const DEMO_CUSTOMERS: Customer[] = [
     full_name: '[DEMO] Ibu Cindy Hartono',
     phone: '+628178899001',
     birthday: '1990-04-12',
-    consent_status: 'opted_out', // Opted-out: MUST NOT BE CONTACTED
+    consent_status: 'opted_out',
     consent_source: 'Customer request',
     consent_updated_at: '2026-05-01T10:00:00Z',
     do_not_contact: true,
@@ -248,45 +297,45 @@ export const DEMO_TASKS: ClientelingTask[] = [
   {
     id: '40000000-0000-0000-0000-000000000001',
     organization_id: DEMO_ORGANIZATION.id,
-    store_id: DEMO_STORES[0].id,
+    store_id: '10000000-0000-0000-0000-000000000003', // Plaza Senayan
     customer_id: '30000000-0000-0000-0000-000000000001',
-    assigned_staff_id: '20000000-0000-0000-0000-000000000003', // Siti Rahma
+    assigned_staff_id: '20000000-0000-0000-0000-000000000003', // Muhamad Ridwan Saputra
     created_by: '20000000-0000-0000-0000-000000000002',
     task_type: 'birthday_greeting',
     priority: 'urgent',
     due_at: '2026-10-16T10:00:00Z',
     status: 'pending',
-    recommended_action: 'Kirimkan ucapan selamat ulang tahun hangat, tawarkan private salon preview Autumn/Winter.',
-    notes: 'Ibu Clarissa sangat menggemari calfskin bags warna burgundy.',
+    recommended_action: 'Kirimkan ucapan selamat ulang tahun personal dan tawarkan private preview koleksi Eleanor Loafer & Reva Ballet terbaru.',
+    notes: 'Ibu Clarissa menyukai ballet shoes ukuran 38 dan Charlie Quilted Shoulder Bag.',
     created_at: '2026-10-12T08:00:00Z',
   },
   {
     id: '40000000-0000-0000-0000-000000000002',
     organization_id: DEMO_ORGANIZATION.id,
-    store_id: DEMO_STORES[0].id,
+    store_id: '10000000-0000-0000-0000-000000000003',
     customer_id: '30000000-0000-0000-0000-000000000002',
-    assigned_staff_id: '20000000-0000-0000-0000-000000000003', // Siti Rahma
+    assigned_staff_id: '20000000-0000-0000-0000-000000000003', // Muhamad Ridwan Saputra
     created_by: '20000000-0000-0000-0000-000000000002',
     task_type: 'vip_new_arrival',
     priority: 'high',
     due_at: '2026-10-15T14:00:00Z',
     status: 'pending',
-    recommended_action: 'Undang untuk melihat footwear capsule collection ukuran 38 yang baru tiba.',
-    notes: 'Pernah reservasi heels edisi terbatas.',
+    recommended_action: 'Undang untuk melihat Reva Heel Ballet 25MM dan Icon Ring yang baru tiba di Plaza Senayan.',
+    notes: 'Pembelian terakhir: Reva Heel Ballet.',
     created_at: '2026-10-13T09:00:00Z',
   },
   {
     id: '40000000-0000-0000-0000-000000000003',
     organization_id: DEMO_ORGANIZATION.id,
-    store_id: DEMO_STORES[0].id,
+    store_id: '10000000-0000-0000-0000-000000000003',
     customer_id: '30000000-0000-0000-0000-000000000004',
-    assigned_staff_id: '20000000-0000-0000-0000-000000000004', // Kevin Wijaya
+    assigned_staff_id: '20000000-0000-0000-0000-000000000004', // Keisha Suhendra
     created_by: '20000000-0000-0000-0000-000000000002',
     task_type: 'birthday_greeting',
     priority: 'urgent',
     due_at: '2026-10-15T11:00:00Z',
     status: 'pending',
-    recommended_action: 'Kirimkan birthday privilege gift card digital dan undangan private styling.',
+    recommended_action: 'Kirimkan ucapan ulang tahun hangat dan undang ke Plaza Senayan untuk complimentary accessory care.',
     notes: 'Ulang tahun tanggal 15 Oktober.',
     created_at: '2026-10-13T10:00:00Z',
   },
@@ -296,12 +345,12 @@ export const DEMO_APPOINTMENTS: Appointment[] = [
   {
     id: '50000000-0000-0000-0000-000000000001',
     organization_id: DEMO_ORGANIZATION.id,
-    store_id: DEMO_STORES[0].id,
+    store_id: '10000000-0000-0000-0000-000000000003',
     customer_id: '30000000-0000-0000-0000-000000000001',
     staff_id: '20000000-0000-0000-0000-000000000003',
     scheduled_at: '2026-10-14T15:00:00Z',
     status: 'scheduled',
-    notes: 'Private salon preview: Autumn/Winter Exotic Handbags collection.',
+    notes: 'Private salon preview: Eleanor Loafer & Charlie Quilted Bag collection.',
     created_at: '2026-10-12T10:00:00Z',
   },
 ];
@@ -316,7 +365,7 @@ export const DEMO_INTERACTIONS: ClientelingInteraction[] = [
     interaction_type: 'outreach',
     interaction_date: '2026-09-20T11:30:00Z',
     outcome: 'positive',
-    notes: 'Ibu Clarissa merespons hangat dan tertarik untuk janji temu minggu depan.',
+    notes: 'Ibu Clarissa merespons positif terkait koleksi Eleanor Loafer.',
     created_at: '2026-09-20T11:35:00Z',
   },
 ];
@@ -326,27 +375,27 @@ export const DEMO_AI_INSIGHTS: AiInsight[] = [
     id: '70000000-0000-0000-0000-000000000001',
     organization_id: DEMO_ORGANIZATION.id,
     scope_type: 'store',
-    scope_id: DEMO_STORES[2].id, // Senayan City
+    scope_id: '10000000-0000-0000-0000-000000000004', // Senayan City
     insight_type: 'achievement_gap',
-    title: 'Senayan City: Kesenjangan Target 22% & UPT Rendah (1.2)',
-    summary: 'Pencapaian penjualan Senayan City berada di level 78.4% dengan gap Rp 136.000.000 pada MTD Oktober. Rendahnya UPT (1.2 vs benchmark 1.8) mengindikasikan transaksi single-item dominan.',
+    title: 'Senayan City: Kesenjangan Target 22% & Peluang Akselerasi UPT',
+    summary: 'Pencapaian penjualan Senayan City berada di level 78.4% dengan gap Rp 136.000.000 MTD. Rata-rata unit produk per transaksi (UPT 1.3) menunjukkan dominasi transaksi single-item.',
     period_start: '2026-10-01',
     period_end: '2026-10-14',
     evidence: [
       {
         metric: 'sales_achievement',
         actual: 78.4,
-        comparison: 92.1,
+        comparison: 94.2,
         target: 100,
         unit: 'percent',
-        context: 'Performa Senayan City vs Rata-rata Brand',
+        context: 'Performa Senayan City vs Plaza Senayan & Plaza Indonesia',
       },
       {
         metric: 'upt',
-        actual: 1.2,
-        comparison: 1.8,
+        actual: 1.3,
+        comparison: 1.7,
         unit: 'units',
-        context: 'Units Per Transaction Senayan City vs Pacific Place',
+        context: 'Units Per Transaction Senayan City vs Benchmark',
       },
       {
         metric: 'sales_gap',
@@ -356,16 +405,15 @@ export const DEMO_AI_INSIGHTS: AiInsight[] = [
       },
     ],
     possible_explanations: [
-      'Staf belum konsisten menawarkan bundling pelengkap (seperti card holder, scarf sutra, atau shoe care kit) saat pembelian tas utama.',
-      'Aksesori footwear ukuran populer mengalami stock-out parsial di gerai Senayan City.',
+      'Peluang cross-selling aksesori pendamping (card case, scarf, bracelet) belum optimal saat transaksi alas kaki atau tas utama.',
     ],
     recommended_actions: [
-      'Jadwalkan sesi coaching Store Manager terkait teknik cross-selling aksesori pendamping di counter kasir.',
-      'Luncurkan kampanye clienteling reaktivasi untuk 18 customer VIP Senayan City yang belum berkunjung dalam 60 hari.',
+      'Fokuskan briefing Store Manager ke SA pada teknik penawaran luxury add-ons (card case, jewelry) di counter kasir.',
+      'Jadwalkan aktivasi personal outreach untuk tamu VIP yang belum berkunjung dalam 45 hari.',
     ],
     priority: 'high',
     limitations: [
-      'Data traffic visitor belum terintegrasi; analisis didasarkan murni pada agregat DSR transaksi tersimpan.',
+      'Data traffic fisik gerai tidak tersedia dalam DSR sehingga tingkat konversi gerai tidak dapat disimpulkan.',
     ],
     model_version: 'RetailIntel-Deterministic-v1',
     status: 'active',

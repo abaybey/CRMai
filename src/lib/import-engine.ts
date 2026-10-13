@@ -388,3 +388,207 @@ export function getTemplateCsv(templateType: 'store_daily_sales' | 'staff_sales'
     'SA-002,Kevin Wijaya,ST-PI-01,2026-10-14,40000000,35000000',
   ].join('\n');
 }
+
+/**
+ * Maps common luxury boutique acronyms (from DSR files) to normalized store codes.
+ */
+export const BOUTIQUE_CODE_MAP: Record<string, string> = {
+  PI: 'ST-PI-01',
+  PP: 'ST-PP-02',
+  PS: 'ST-PS-03',
+  TBPS: 'ST-PS-03',
+  TBI_TBPS: 'ST-PS-03',
+  SC: 'ST-SC-04',
+  PIM: 'ST-PIM-05',
+  KOKAS: 'ST-KOKAS-06',
+  TP: 'ST-TP-07',
+  VK: 'ST-VK-08',
+  'ICON BALI': 'ST-IB-09',
+  PASKAL: 'ST-PK-10',
+  TBOS: 'ST-ON-11',
+};
+
+export function normalizeBoutiqueCode(code: string): string {
+  const clean = code.trim().toUpperCase();
+  return BOUTIQUE_CODE_MAP[clean] || clean;
+}
+
+export type DsrFormatType = 'multi_store_matrix' | 'transaction_item_level' | 'standard_columnar';
+
+export interface AutoParsedDsrResult {
+  formatType: DsrFormatType;
+  sheetName: string;
+  summary: ImportValidationSummary;
+}
+
+/**
+ * Inspects a workbook and intelligently parses either:
+ * 1. Multi-Store Matrix (TB Sales Closing Update)
+ * 2. Transaction Item-Level DSR (Daily Briefing DSR)
+ * 3. Standard Columnar DSR
+ */
+export function detectAndParseDsrWorkbook(buffer: ArrayBuffer): AutoParsedDsrResult {
+  const workbook = XLSX.read(buffer, { type: 'array' });
+
+  // 1. Check for Transaction Item-Level DSR Sheet (e.g. "DSR September 2026" or sheet with "Boutique Code" & "Docnum")
+  for (const sheetName of workbook.SheetNames) {
+    const ws = workbook.Sheets[sheetName];
+    const rows: unknown[][] = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+    if (rows.length < 2) continue;
+
+    const firstRow = (rows[0] || []).map(c => String(c).trim().toLowerCase());
+    const hasDocnum = firstRow.some(c => c.includes('docnum') || c.includes('receipt') || c.includes('no struk'));
+    const hasBoutique = firstRow.some(c => c.includes('boutique') || c.includes('toko'));
+
+    if (hasDocnum && hasBoutique) {
+      // Parse transaction item-level sheet by aggregating lines into store daily records
+      const boutiqueIdx = firstRow.findIndex(c => c.includes('boutique code') || c.includes('kodetoko') || c.includes('boutique'));
+      const dateIdx = firstRow.findIndex(c => c === 'docdate' || c === 'date' || c === 'tanggal');
+      const netIdx = firstRow.findIndex(c => c.includes('net price') || c.includes('net sales') || c.includes('net amount') || c.includes('gross price'));
+      const qtyIdx = firstRow.findIndex(c => c === 'qty' || c === 'quantity' || c === 'unit');
+      const docnumIdx = firstRow.findIndex(c => c.includes('docnum'));
+
+      // Aggregate by store + date
+      interface StoreDateAgg {
+        storeCode: string;
+        salesDate: string;
+        netSales: number;
+        docnums: Set<string>;
+        units: number;
+      }
+      const aggMap = new Map<string, StoreDateAgg>();
+
+      for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        if (!row || row.length === 0) continue;
+
+        const rawStore = boutiqueIdx >= 0 ? String(row[boutiqueIdx] || '') : 'DEFAULT';
+        const rawDate = dateIdx >= 0 ? row[dateIdx] : '';
+        const parsedDate = parseFlexibleDate(rawDate);
+        if (!rawStore || !parsedDate) continue;
+
+        const storeCode = normalizeBoutiqueCode(rawStore);
+        const netVal = netIdx >= 0 ? parseLocalizedNumber(row[netIdx]) || 0 : 0;
+        const qtyVal = qtyIdx >= 0 ? parseLocalizedNumber(row[qtyIdx]) || 1 : 1;
+        const docnum = docnumIdx >= 0 ? String(row[docnumIdx] || '') : `tx-${i}`;
+
+        const key = `${storeCode}__${parsedDate}`;
+        if (!aggMap.has(key)) {
+          aggMap.set(key, {
+            storeCode,
+            salesDate: parsedDate,
+            netSales: 0,
+            docnums: new Set(),
+            units: 0,
+          });
+        }
+
+        const entry = aggMap.get(key)!;
+        entry.netSales += netVal;
+        if (docnum) entry.docnums.add(docnum);
+        entry.units += qtyVal;
+      }
+
+      const rawRows: Record<string, unknown>[] = [];
+      Array.from(aggMap.values()).forEach(agg => {
+        rawRows.push({
+          'Kode Toko': agg.storeCode,
+          'Tanggal': agg.salesDate,
+          'Net Sales': agg.netSales,
+          'Jumlah Transaksi': agg.docnums.size,
+          'Unit Terjual': agg.units,
+        });
+      });
+
+      const mapping: ColumnMapping = {
+        storeCode: 'Kode Toko',
+        salesDate: 'Tanggal',
+        netSales: 'Net Sales',
+        transactionCount: 'Jumlah Transaksi',
+        unitsSold: 'Unit Terjual',
+      };
+
+      const summary = validateStoreDailyRows(rawRows, mapping);
+      return {
+        formatType: 'transaction_item_level',
+        sheetName,
+        summary,
+      };
+    }
+  }
+
+  // 2. Check for Multi-Store Closing Matrix Sheet (e.g. "OCTOBER", "SEPTEMBER", with row: Date, PI, PP, PS, SC...)
+  for (const sheetName of workbook.SheetNames) {
+    const ws = workbook.Sheets[sheetName];
+    const rows: unknown[][] = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+    if (rows.length < 5) continue;
+
+    // Search first 20 rows for "Date" header
+    for (let r = 0; r < Math.min(20, rows.length); r++) {
+      const row = rows[r] || [];
+      const dateCell = String(row[0] || '').trim().toLowerCase();
+
+      if (dateCell === 'date' || dateCell === 'tanggal') {
+        // Found header row with store columns
+        const headerRow = row.map(c => String(c || '').trim());
+        const storeCols: { colIdx: number; storeCode: string }[] = [];
+
+        for (let c = 1; c < headerRow.length; c++) {
+          const name = headerRow[c];
+          if (!name || name.toLowerCase().includes('total') || name.toLowerCase().includes('achieve')) continue;
+          storeCols.push({ colIdx: c, storeCode: normalizeBoutiqueCode(name) });
+        }
+
+        if (storeCols.length >= 2) {
+          // Unpivot into rows
+          const unpivotedRows: Record<string, unknown>[] = [];
+
+          for (let d = r + 1; d < rows.length; d++) {
+            const dataRow = rows[d] || [];
+            const rawDate = dataRow[0];
+            const parsedDate = parseFlexibleDate(rawDate);
+            if (!parsedDate) continue;
+
+            for (const sc of storeCols) {
+              const rawSales = dataRow[sc.colIdx];
+              const netSales = parseLocalizedNumber(rawSales);
+              if (netSales !== null && netSales >= 0) {
+                unpivotedRows.push({
+                  'Kode Toko': sc.storeCode,
+                  'Tanggal': parsedDate,
+                  'Net Sales': netSales,
+                });
+              }
+            }
+          }
+
+          if (unpivotedRows.length > 0) {
+            const mapping: ColumnMapping = {
+              storeCode: 'Kode Toko',
+              salesDate: 'Tanggal',
+              netSales: 'Net Sales',
+            };
+            const summary = validateStoreDailyRows(unpivotedRows, mapping);
+            return {
+              formatType: 'multi_store_matrix',
+              sheetName,
+              summary,
+            };
+          }
+        }
+      }
+    }
+  }
+
+  // 3. Fallback to Standard Columnar Parser
+  const parsedSheet = parseSheetBuffer(buffer);
+  const mapping = autoSuggestMapping(parsedSheet.headers);
+  const summary = validateStoreDailyRows(parsedSheet.rawRows, mapping);
+
+  return {
+    formatType: 'standard_columnar',
+    sheetName: workbook.SheetNames[0] || 'Sheet1',
+    summary,
+  };
+}
+

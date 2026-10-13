@@ -6,6 +6,8 @@ import {
   autoSuggestMapping,
   validateStoreDailyRows,
   generateErrorReportCsv,
+  normalizeBoutiqueCode,
+  detectAndParseDsrWorkbook,
 } from '../import-engine';
 
 describe('Import Engine Unit Tests', () => {
@@ -136,4 +138,44 @@ describe('Import Engine Unit Tests', () => {
       expect(csv).toContain('2,"Format tanggal tidak valid; Net sales wajib diisi"');
     });
   });
+
+  describe('Real Luxury DSR Parsing (contohdsr)', () => {
+    it('normalizes luxury boutique acronyms correctly', () => {
+      expect(normalizeBoutiqueCode('PI')).toBe('ST-PI-01');
+      expect(normalizeBoutiqueCode('PP')).toBe('ST-PP-02');
+      expect(normalizeBoutiqueCode('TBI_TBPS')).toBe('ST-PS-03');
+      expect(normalizeBoutiqueCode('SC')).toBe('ST-SC-04');
+      expect(normalizeBoutiqueCode('PIM')).toBe('ST-PIM-05');
+      expect(normalizeBoutiqueCode('KOKAS')).toBe('ST-KOKAS-06');
+    });
+
+    it('successfully parses TB Sales Closing Update multi-store matrix workbook', async () => {
+      const fs = await import('fs');
+      const path = await import('path');
+      const filePath = path.join(process.cwd(), 'contohdsr', 'TB Sales Closing Update 2026.xlsx');
+      if (fs.existsSync(filePath)) {
+        const buffer = fs.readFileSync(filePath).buffer;
+        const result = detectAndParseDsrWorkbook(buffer);
+        expect(result.formatType).toBe('multi_store_matrix');
+        expect(result.summary.validRows.length).toBeGreaterThan(50);
+        expect(result.summary.validRows[0].sanitized.storeCode).toBeDefined();
+        expect(result.summary.validRows[0].sanitized.netSales).toBeGreaterThanOrEqual(0);
+      }
+    });
+
+    it('successfully parses Daily Briefing September item-level transaction DSR workbook', async () => {
+      const fs = await import('fs');
+      const path = await import('path');
+      const filePath = path.join(process.cwd(), 'contohdsr', 'Daily Briefing September 2026x.xlsx');
+      if (fs.existsSync(filePath)) {
+        const buffer = fs.readFileSync(filePath).buffer;
+        const result = detectAndParseDsrWorkbook(buffer);
+        expect(result.formatType).toBe('transaction_item_level');
+        expect(result.summary.validRows.length).toBeGreaterThan(0);
+        expect(result.summary.validRows[0].sanitized.storeCode).toBe('ST-PS-03');
+        expect(result.summary.validRows[0].sanitized.transactionCount).toBeGreaterThan(0);
+      }
+    });
+  });
 });
+

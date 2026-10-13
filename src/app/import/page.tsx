@@ -10,16 +10,16 @@ import {
   validateStoreDailyRows,
   generateErrorReportCsv,
   getTemplateCsv,
+  detectAndParseDsrWorkbook,
   ColumnMapping,
   ImportValidationSummary,
 } from '@/lib/import-engine';
 import { formatIDR } from '@/lib/kpi';
 import {
   UploadCloud,
-  FileSpreadsheet,
   CheckCircle2,
-  AlertCircle,
   Download,
+  FileSpreadsheet,
 } from 'lucide-react';
 
 export default function ImportPage() {
@@ -27,6 +27,7 @@ export default function ImportPage() {
 
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
   const [fileName, setFileName] = useState('');
+  const [detectedFormatInfo, setDetectedFormatInfo] = useState('');
   const [headers, setHeaders] = useState<string[]>([]);
   const [rawRows, setRawRows] = useState<Record<string, unknown>[]>([]);
   const [mapping, setMapping] = useState<ColumnMapping>({});
@@ -44,15 +45,27 @@ export default function ImportPage() {
 
     try {
       const buffer = await file.arrayBuffer();
-      const parsed = parseSheetBuffer(buffer);
+      const detected = detectAndParseDsrWorkbook(buffer);
 
-      setHeaders(parsed.headers);
-      setRawRows(parsed.rawRows);
-
-      const suggested = autoSuggestMapping(parsed.headers);
-      setMapping(suggested);
-
-      setStep(2);
+      if (
+        detected.formatType === 'multi_store_matrix' ||
+        detected.formatType === 'transaction_item_level'
+      ) {
+        setValidationSummary(detected.summary);
+        setDetectedFormatInfo(
+          detected.formatType === 'multi_store_matrix'
+            ? `Format Matriks Multi-Cabang Terdeteksi (Sheet: ${detected.sheetName})`
+            : `Format Detail Transaksi & Item Terdeteksi (Sheet: ${detected.sheetName})`
+        );
+        setStep(3); // Langsung lompat ke Preview & Validasi
+      } else {
+        const parsed = parseSheetBuffer(buffer);
+        setHeaders(parsed.headers);
+        setRawRows(parsed.rawRows);
+        setMapping(autoSuggestMapping(parsed.headers));
+        setDetectedFormatInfo('Format Tabel Kolom Standar');
+        setStep(2);
+      }
     } catch {
       alert('Gagal membaca file spreadsheet. Pastikan format file .xlsx, .xls, atau .csv valid.');
     } finally {
@@ -60,6 +73,78 @@ export default function ImportPage() {
     }
   };
 
+  // Load sample multi-store matrix format (TB Sales Closing Update)
+  const handleLoadSampleMatrix = () => {
+    const matrixRows: Record<string, unknown>[] = [
+      { 'Kode Toko': 'ST-PI-01', Tanggal: '2026-10-14', 'Net Sales': 72440000 },
+      { 'Kode Toko': 'ST-PS-03', Tanggal: '2026-10-14', 'Net Sales': 90555000 },
+      { 'Kode Toko': 'ST-SC-04', Tanggal: '2026-10-14', 'Net Sales': 35260000 },
+      { 'Kode Toko': 'ST-PIM-05', Tanggal: '2026-10-14', 'Net Sales': 26039620 },
+      { 'Kode Toko': 'ST-KOKAS-06', Tanggal: '2026-10-14', 'Net Sales': 8200000 },
+      { 'Kode Toko': 'ST-PI-01', Tanggal: '2026-10-13', 'Net Sales': 51700000 },
+      { 'Kode Toko': 'ST-PS-03', Tanggal: '2026-10-13', 'Net Sales': 49750000 },
+      { 'Kode Toko': 'ST-SC-04', Tanggal: '2026-10-13', 'Net Sales': 30620000 },
+      { 'Kode Toko': 'ST-PIM-05', Tanggal: '2026-10-13', 'Net Sales': 46500000 },
+    ];
+    setFileName('TB Sales Closing Update 2026.xlsx (Simulasi)');
+    setDetectedFormatInfo('Format Matriks Multi-Cabang (Sheet: OCTOBER)');
+    const sampleMapping: ColumnMapping = {
+      storeCode: 'Kode Toko',
+      salesDate: 'Tanggal',
+      netSales: 'Net Sales',
+    };
+    const summary = validateStoreDailyRows(matrixRows, sampleMapping);
+    setValidationSummary(summary);
+    setStep(3);
+  };
+
+  // Load sample item-level transaction format (Daily Briefing)
+  const handleLoadSampleItemLevel = () => {
+    const itemRows: Record<string, unknown>[] = [
+      {
+        'Kode Toko': 'ST-PS-03',
+        Tanggal: '2026-09-01',
+        'Net Sales': 85430000,
+        'Jumlah Transaksi': 13,
+        'Unit Terjual': 19,
+      },
+      {
+        'Kode Toko': 'ST-PS-03',
+        Tanggal: '2026-09-02',
+        'Net Sales': 85095000,
+        'Jumlah Transaksi': 11,
+        'Unit Terjual': 16,
+      },
+      {
+        'Kode Toko': 'ST-PS-03',
+        Tanggal: '2026-09-03',
+        'Net Sales': 41170000,
+        'Jumlah Transaksi': 5,
+        'Unit Terjual': 7,
+      },
+      {
+        'Kode Toko': 'ST-PS-03',
+        Tanggal: '2026-09-04',
+        'Net Sales': 168925000,
+        'Jumlah Transaksi': 12,
+        'Unit Terjual': 21,
+      },
+    ];
+    setFileName('Daily Briefing September 2026x.xlsx (Simulasi)');
+    setDetectedFormatInfo('Format Transaksi Item-Level (Sheet: DSR September 2026)');
+    const sampleMapping: ColumnMapping = {
+      storeCode: 'Kode Toko',
+      salesDate: 'Tanggal',
+      netSales: 'Net Sales',
+      transactionCount: 'Jumlah Transaksi',
+      unitsSold: 'Unit Terjual',
+    };
+    const summary = validateStoreDailyRows(itemRows, sampleMapping);
+    setValidationSummary(summary);
+    setStep(3);
+  };
+
+  // Load standard columnar template
   const handleLoadSampleTemplate = () => {
     const csvContent = getTemplateCsv('store_daily_sales');
     const lines = csvContent.split('\n');
@@ -73,7 +158,8 @@ export default function ImportPage() {
       return obj;
     });
 
-    setFileName('sample_dsr_october_luxury.csv');
+    setFileName('template_store_daily_sales.csv');
+    setDetectedFormatInfo('Format Kolom Standar');
     setHeaders(detectedHeaders);
     setRawRows(rows);
     setMapping(autoSuggestMapping(detectedHeaders));
@@ -93,9 +179,8 @@ export default function ImportPage() {
     try {
       const recordsToCommit = validationSummary.validRows.map(row => {
         const storeCode = String(row.sanitized.storeCode);
-        const matchedStore = stores.find(
-          s => s.code.toLowerCase() === storeCode.toLowerCase()
-        ) || stores[0];
+        const matchedStore =
+          stores.find(s => s.code.toLowerCase() === storeCode.toLowerCase()) || stores[0];
 
         return {
           organization_id: matchedStore.organization_id,
@@ -103,7 +188,9 @@ export default function ImportPage() {
           sales_date: String(row.sanitized.salesDate),
           net_sales: Number(row.sanitized.netSales),
           target_amount: row.sanitized.targetAmount ? Number(row.sanitized.targetAmount) : null,
-          transaction_count: row.sanitized.transactionCount ? Number(row.sanitized.transactionCount) : null,
+          transaction_count: row.sanitized.transactionCount
+            ? Number(row.sanitized.transactionCount)
+            : null,
           units_sold: row.sanitized.unitsSold ? Number(row.sanitized.unitsSold) : null,
         };
       });
@@ -143,9 +230,9 @@ export default function ImportPage() {
   return (
     <AppLayout
       title="Impor Data DSR"
-      subtitle="Impor berkas Daily Sales Report, verifikasi kolom & pemetaan data"
+      subtitle="Dukungan otomatis format matriks multi-cabang, detail transaksi per SA & format standar"
     >
-      <div className="max-w-3xl mx-auto space-y-6">
+      <div className="max-w-3xl mx-auto space-y-5">
         {/* Progress Stepper */}
         <div className="bg-white p-3.5 rounded-lg border border-[#EAEAEA]">
           <div className="flex items-center justify-between text-xs">
@@ -184,19 +271,20 @@ export default function ImportPage() {
 
         {/* STEP 1: Upload */}
         {step === 1 && (
-          <div className="space-y-5">
-            <div className="bg-white rounded-lg border border-[#EAEAEA] p-8 text-center">
-              <UploadCloud className="w-10 h-10 text-[#555555] mx-auto mb-2.5" />
+          <div className="space-y-4">
+            <div className="bg-white rounded-lg border border-[#EAEAEA] p-6 text-center">
+              <UploadCloud className="w-9 h-9 text-[#555555] mx-auto mb-2" />
               <h3 className="text-sm font-semibold text-[#111111] mb-1">
                 Pilih Berkas Spreadsheet DSR
               </h3>
-              <p className="text-xs text-[#666666] max-w-sm mx-auto mb-5 leading-relaxed">
-                Mendukung .xlsx, .xls, dan .csv. Sistem mendeteksi header secara otomatis.
+              <p className="text-xs text-[#666666] max-w-sm mx-auto mb-4 leading-relaxed">
+                Mendukung file dari folder <code>contohdsr</code>: format matriks harian per cabang
+                maupun detail transaksi item per SA.
               </p>
 
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-2.5">
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-2">
                 <label className="cursor-pointer bg-[#1A1A1A] hover:bg-[#333333] text-white px-4 py-2 rounded text-xs font-medium transition-colors">
-                  <span>Pilih Berkas</span>
+                  <span>Pilih Berkas dari Komputer</span>
                   <input
                     type="file"
                     accept=".xlsx,.xls,.csv"
@@ -204,20 +292,42 @@ export default function ImportPage() {
                     className="hidden"
                   />
                 </label>
+              </div>
 
-                <button
-                  type="button"
-                  onClick={handleLoadSampleTemplate}
-                  className="bg-[#FAFAFA] border border-[#EAEAEA] text-[#333333] px-3.5 py-2 rounded text-xs hover:bg-[#F5F5F5] transition-colors"
-                >
-                  Gunakan File Contoh Demo
-                </button>
+              {/* Quick Format Demonstrators */}
+              <div className="mt-5 pt-4 border-t border-[#F5F5F5]">
+                <span className="text-[11px] text-[#777777] block mb-2 font-medium">
+                  Atau uji langsung format dari <code>contohdsr</code>:
+                </span>
+                <div className="flex flex-wrap items-center justify-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleLoadSampleMatrix}
+                    className="bg-[#FAFAFA] border border-[#EAEAEA] hover:bg-[#F5F5F5] text-[#222222] px-3 py-1.5 rounded text-[11px] transition-colors"
+                  >
+                    Format 1: Matriks Multi-Cabang (TB Sales Closing)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleLoadSampleItemLevel}
+                    className="bg-[#FAFAFA] border border-[#EAEAEA] hover:bg-[#F5F5F5] text-[#222222] px-3 py-1.5 rounded text-[11px] transition-colors"
+                  >
+                    Format 2: Detail Transaksi & SA (Daily Briefing)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleLoadSampleTemplate}
+                    className="bg-[#FAFAFA] border border-[#EAEAEA] hover:bg-[#F5F5F5] text-[#222222] px-3 py-1.5 rounded text-[11px] transition-colors"
+                  >
+                    Format 3: Kolom Standar
+                  </button>
+                </div>
               </div>
             </div>
 
             {/* Download Templates Bar */}
             <div className="bg-white rounded-lg border border-[#EAEAEA] p-4">
-              <span className="text-xs font-semibold text-[#111111] uppercase tracking-wider block mb-2.5">
+              <span className="text-xs font-semibold text-[#111111] uppercase tracking-wider block mb-2">
                 Unduh Template Standar
               </span>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
@@ -252,19 +362,24 @@ export default function ImportPage() {
 
         {/* STEP 2: Mapping */}
         {step === 2 && (
-          <div className="bg-white rounded-lg border border-[#EAEAEA] p-5 space-y-5">
+          <div className="bg-white rounded-lg border border-[#EAEAEA] p-5 space-y-4">
             <div className="flex items-center justify-between pb-2.5 border-b border-[#F0F0F0]">
               <div>
                 <h3 className="text-xs font-semibold text-[#111111] uppercase tracking-wider">
-                  Pemetaan Kolom
+                  Pemetaan Kolom Spreadsheet
                 </h3>
                 <p className="text-[11px] text-[#777777]">
-                  File: {fileName} • {rawRows.length} baris data terdeteksi
+                  File: {fileName} • {rawRows.length} baris terdeteksi
                 </p>
               </div>
+              {detectedFormatInfo && (
+                <span className="text-[10px] bg-[#F5F5F5] text-[#444444] px-2 py-0.5 rounded">
+                  {detectedFormatInfo}
+                </span>
+              )}
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
               <div>
                 <label className="block text-[#444444] font-medium mb-1">
                   Kolom Kode Toko <span className="text-[#C0392B]">*</span>
@@ -336,42 +451,6 @@ export default function ImportPage() {
                   ))}
                 </select>
               </div>
-
-              <div>
-                <label className="block text-[#444444] font-medium mb-1">
-                  Kolom Jumlah Transaksi (Opsional)
-                </label>
-                <select
-                  value={mapping.transactionCount || ''}
-                  onChange={e => setMapping({ ...mapping, transactionCount: e.target.value })}
-                  className="w-full p-2 border border-[#EAEAEA] rounded bg-white text-xs text-[#111111]"
-                >
-                  <option value="">-- Pilih Kolom --</option>
-                  {headers.map(h => (
-                    <option key={h} value={h}>
-                      {h}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-[#444444] font-medium mb-1">
-                  Kolom Unit Terjual (Opsional)
-                </label>
-                <select
-                  value={mapping.unitsSold || ''}
-                  onChange={e => setMapping({ ...mapping, unitsSold: e.target.value })}
-                  className="w-full p-2 border border-[#EAEAEA] rounded bg-white text-xs text-[#111111]"
-                >
-                  <option value="">-- Pilih Kolom --</option>
-                  {headers.map(h => (
-                    <option key={h} value={h}>
-                      {h}
-                    </option>
-                  ))}
-                </select>
-              </div>
             </div>
 
             <div className="flex items-center justify-between pt-3 border-t border-[#F5F5F5]">
@@ -395,14 +474,14 @@ export default function ImportPage() {
 
         {/* STEP 3: Preview */}
         {step === 3 && validationSummary && (
-          <div className="bg-white rounded-lg border border-[#EAEAEA] p-5 space-y-5">
+          <div className="bg-white rounded-lg border border-[#EAEAEA] p-5 space-y-4">
             <div className="flex items-center justify-between pb-2.5 border-b border-[#F0F0F0]">
               <div>
                 <h3 className="text-xs font-semibold text-[#111111] uppercase tracking-wider">
-                  Hasil Validasi Data
+                  Hasil Validasi Data DSR
                 </h3>
                 <p className="text-[11px] text-[#777777]">
-                  Tinjau baris data sebelum commit ke database
+                  {fileName} • {detectedFormatInfo || 'Format DSR'}
                 </p>
               </div>
               {validationSummary.invalidRows.length > 0 && (
@@ -418,22 +497,22 @@ export default function ImportPage() {
             </div>
 
             {/* Validation Metrics Summary */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
               <div className="p-3 bg-[#FAFAFA] border border-[#EAEAEA] rounded">
                 <span className="text-[10px] text-[#777777] uppercase block">Baris Valid</span>
-                <div className="text-lg font-semibold text-[#1E7E34] mt-0.5">
+                <div className="text-base font-semibold text-[#1E7E34] mt-0.5">
                   {validationSummary.validRows.length} Baris
                 </div>
               </div>
               <div className="p-3 bg-[#FAFAFA] border border-[#EAEAEA] rounded">
                 <span className="text-[10px] text-[#777777] uppercase block">Baris Bermasalah</span>
-                <div className="text-lg font-semibold text-[#C0392B] mt-0.5">
+                <div className="text-base font-semibold text-[#C0392B] mt-0.5">
                   {validationSummary.invalidRows.length} Baris
                 </div>
               </div>
               <div className="p-3 bg-[#FAFAFA] border border-[#EAEAEA] rounded">
                 <span className="text-[10px] text-[#777777] uppercase block">Duplikasi</span>
-                <div className="text-lg font-semibold text-[#B87A00] mt-0.5">
+                <div className="text-base font-semibold text-[#B87A00] mt-0.5">
                   {validationSummary.duplicateCount} Duplikat
                 </div>
               </div>
@@ -441,33 +520,31 @@ export default function ImportPage() {
 
             {/* Preview Table */}
             <div>
-              <span className="text-[11px] font-semibold text-[#111111] block mb-2">
-                Preview Sampel Data Valid
+              <span className="text-[11px] font-semibold text-[#111111] block mb-1.5">
+                Preview Sampel Data
               </span>
-              <div className="overflow-x-auto border border-[#EAEAEA] rounded">
+              <div className="overflow-x-auto border border-[#EAEAEA] rounded max-h-60 overflow-y-auto">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-[#FAFAFA] text-[#666666] text-[11px] font-medium border-b border-[#EAEAEA]">
+                  <thead className="bg-[#FAFAFA] text-[#666666] text-[11px] font-medium border-b border-[#EAEAEA] sticky top-0">
                     <tr>
                       <th className="py-2 px-3 font-normal">Kode Toko</th>
                       <th className="py-2 px-3 font-normal">Tanggal</th>
                       <th className="py-2 px-3 font-normal">Net Sales</th>
-                      <th className="py-2 px-3 font-normal">Target</th>
                       <th className="py-2 px-3 font-normal">Transaksi</th>
                       <th className="py-2 px-3 font-normal">Unit</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#F5F5F5]">
-                    {validationSummary.validRows.slice(0, 5).map((row, idx) => (
+                    {validationSummary.validRows.slice(0, 8).map((row, idx) => (
                       <tr key={idx} className="hover:bg-[#FAFAFA]">
-                        <td className="py-2 px-3">{String(row.sanitized.storeCode)}</td>
-                        <td className="py-2 px-3">{String(row.sanitized.salesDate)}</td>
                         <td className="py-2 px-3 font-medium text-[#111111]">
-                          {formatIDR(Number(row.sanitized.netSales))}
+                          {String(row.sanitized.storeCode)}
                         </td>
                         <td className="py-2 px-3 text-[#666666]">
-                          {row.sanitized.targetAmount
-                            ? formatIDR(Number(row.sanitized.targetAmount))
-                            : '-'}
+                          {String(row.sanitized.salesDate)}
+                        </td>
+                        <td className="py-2 px-3 font-medium text-[#111111]">
+                          {formatIDR(Number(row.sanitized.netSales))}
                         </td>
                         <td className="py-2 px-3 text-[#666666]">
                           {String(row.sanitized.transactionCount || '-')}
@@ -485,7 +562,7 @@ export default function ImportPage() {
             <div className="flex items-center justify-between pt-3 border-t border-[#F5F5F5]">
               <button
                 type="button"
-                onClick={() => setStep(2)}
+                onClick={() => setStep(1)}
                 className="px-3.5 py-1.5 border border-[#EAEAEA] rounded text-xs text-[#666666] hover:bg-[#F5F5F5]"
               >
                 Kembali
@@ -496,7 +573,9 @@ export default function ImportPage() {
                 onClick={handleCommitImport}
                 className="px-4 py-1.5 bg-[#1A1A1A] hover:bg-[#333333] disabled:bg-[#CCCCCC] text-white rounded text-xs font-medium"
               >
-                {isLoading ? 'Menyimpan...' : `Simpan ${validationSummary.validRows.length} Baris Data`}
+                {isLoading
+                  ? 'Menyimpan...'
+                  : `Simpan ${validationSummary.validRows.length} Baris Data`}
               </button>
             </div>
           </div>
@@ -505,16 +584,14 @@ export default function ImportPage() {
         {/* STEP 4: Complete */}
         {step === 4 && commitResult && (
           <div className="bg-white rounded-lg border border-[#EAEAEA] p-8 text-center space-y-3">
-            <CheckCircle2 className="w-10 h-10 text-[#1E7E34] mx-auto" />
-            <h3 className="text-sm font-semibold text-[#111111]">
-              Impor DSR Selesai
-            </h3>
+            <CheckCircle2 className="w-9 h-9 text-[#1E7E34] mx-auto" />
+            <h3 className="text-sm font-semibold text-[#111111]">Impor DSR Selesai</h3>
             <p className="text-xs text-[#666666] max-w-sm mx-auto leading-relaxed">
-              Sebanyak <strong>{commitResult.added} baris data penjualan</strong> berhasil disimpan.
-              Dashboard dan laporan performa telah diperbarui.
+              Sebanyak <strong>{commitResult.added} baris data penjualan</strong> berhasil disimpan
+              dan dinormalisasi. Seluruh dashboard telah diperbarui secara langsung.
             </p>
 
-            <div className="pt-3 flex items-center justify-center gap-2.5">
+            <div className="pt-2 flex items-center justify-center gap-2">
               <a
                 href="/area/dashboard"
                 className="px-4 py-1.5 bg-[#1A1A1A] text-white rounded text-xs font-medium hover:bg-[#333333]"
