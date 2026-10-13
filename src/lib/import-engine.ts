@@ -222,9 +222,16 @@ export function parseSheetBuffer(buffer: ArrayBuffer): { headers: string[]; rawR
     }
   }
 
+  const headerCount: Record<string, number> = {};
   const rawHeaders = (rows[headerRowIndex] || []).map((col, idx) => {
-    const s = String(col || '').trim();
-    return s || `Column_${idx + 1}`;
+    const s = String(col || '').trim() || `Column_${idx + 1}`;
+    if (headerCount[s] !== undefined) {
+      headerCount[s]++;
+      return `${s} (${headerCount[s]})`;
+    } else {
+      headerCount[s] = 1;
+      return s;
+    }
   });
 
   const rawRows: Record<string, unknown>[] = [];

@@ -390,8 +390,8 @@ export default function ImportPage() {
                   className="w-full p-2 border border-[#EAEAEA] rounded bg-white text-xs text-[#111111]"
                 >
                   <option value="">-- Pilih Kolom --</option>
-                  {headers.map(h => (
-                    <option key={h} value={h}>
+                  {headers.map((h, idx) => (
+                    <option key={`${h}-${idx}`} value={h}>
                       {h}
                     </option>
                   ))}
@@ -408,8 +408,8 @@ export default function ImportPage() {
                   className="w-full p-2 border border-[#EAEAEA] rounded bg-white text-xs text-[#111111]"
                 >
                   <option value="">-- Pilih Kolom --</option>
-                  {headers.map(h => (
-                    <option key={h} value={h}>
+                  {headers.map((h, idx) => (
+                    <option key={`${h}-${idx}`} value={h}>
                       {h}
                     </option>
                   ))}
@@ -426,8 +426,8 @@ export default function ImportPage() {
                   className="w-full p-2 border border-[#EAEAEA] rounded bg-white text-xs text-[#111111]"
                 >
                   <option value="">-- Pilih Kolom --</option>
-                  {headers.map(h => (
-                    <option key={h} value={h}>
+                  {headers.map((h, idx) => (
+                    <option key={`${h}-${idx}`} value={h}>
                       {h}
                     </option>
                   ))}
@@ -444,8 +444,8 @@ export default function ImportPage() {
                   className="w-full p-2 border border-[#EAEAEA] rounded bg-white text-xs text-[#111111]"
                 >
                   <option value="">-- Pilih Kolom --</option>
-                  {headers.map(h => (
-                    <option key={h} value={h}>
+                  {headers.map((h, idx) => (
+                    <option key={`${h}-${idx}`} value={h}>
                       {h}
                     </option>
                   ))}

@@ -52,19 +52,26 @@ function CustomersContent() {
   const [interactionNotes, setInteractionNotes] = useState('');
   const [interactionFeedback, setInteractionFeedback] = useState('');
 
+  const handledQueryRef = React.useRef<string | null>(null);
+
   useEffect(() => {
     const action = searchParams.get('action');
     const customerId = searchParams.get('customerId');
-    if (customerId) {
-      const cust = customers.find(c => c.id === customerId);
-      if (cust) {
+    if (!customerId) return;
+
+    const queryKey = `${action}:${customerId}`;
+    if (handledQueryRef.current === queryKey) return;
+    handledQueryRef.current = queryKey;
+
+    const cust = retailDataStore.getCustomers().find(c => c.id === customerId);
+    if (cust) {
+      if (action === 'draft') {
+        handleOpenDraft(cust);
+      } else {
         setSelectedCustomer(cust);
-        if (action === 'draft') {
-          handleOpenDraft(cust);
-        }
       }
     }
-  }, [searchParams, customers]);
+  }, [searchParams]);
 
   const filteredCustomers = customers.filter(cust => {
     const term = searchTerm.toLowerCase();
