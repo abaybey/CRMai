@@ -88,7 +88,7 @@ export function Sidebar() {
           const Icon = item.icon;
           return (
             <Link
-              key={item.href}
+              key={item.name}
               href={item.href}
               className={`flex items-center justify-between px-3 py-2 rounded-md text-xs font-medium transition-colors ${
                 item.active

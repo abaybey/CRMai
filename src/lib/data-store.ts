@@ -41,10 +41,11 @@ class RetailDataStore {
   private selectedStoreId: string = 'all'; // 'all' or specific store ID
 
   constructor() {
-    this.loadFromStorage();
+    // Note: Do not load localStorage synchronously here to prevent SSR hydration mismatch.
+    // Call loadFromStorage explicitly in client-side useEffect.
   }
 
-  private loadFromStorage() {
+  public loadFromStorage() {
     if (typeof window === 'undefined') return;
     try {
       const stored = localStorage.getItem('retail_os_store_v1');

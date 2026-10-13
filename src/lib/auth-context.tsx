@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Profile, Store, UserRole } from '@/types';
 import { retailDataStore } from './data-store';
+import { DEMO_PROFILES, DEMO_STORES } from './demo-data';
 
 interface AuthContextType {
   currentProfile: Profile;
@@ -10,6 +11,7 @@ interface AuthContextType {
   stores: Store[];
   selectedStoreId: string;
   isDemoMode: boolean;
+  isHydrated: boolean;
   switchProfile: (profileId: string) => void;
   switchStore: (storeId: string) => void;
   allProfiles: Profile[];
@@ -19,10 +21,12 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [currentProfile, setCurrentProfile] = useState<Profile>(retailDataStore.getCurrentProfile());
-  const [stores, setStores] = useState<Store[]>(retailDataStore.getStores());
-  const [selectedStoreId, setSelectedStoreId] = useState<string>(retailDataStore.getSelectedStoreId());
-  const [allProfiles, setAllProfiles] = useState<Profile[]>(retailDataStore.getProfiles());
+  // Use deterministic default SSR state initially
+  const [currentProfile, setCurrentProfile] = useState<Profile>(DEMO_PROFILES[0]);
+  const [stores, setStores] = useState<Store[]>(DEMO_STORES);
+  const [selectedStoreId, setSelectedStoreId] = useState<string>('all');
+  const [allProfiles, setAllProfiles] = useState<Profile[]>(DEMO_PROFILES);
+  const [isHydrated, setIsHydrated] = useState(false);
   const [, setTick] = useState(0);
 
   const refreshData = () => {
@@ -34,7 +38,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
+    // Only load persisted state from localStorage on client mount to eliminate SSR hydration mismatches
+    retailDataStore.loadFromStorage();
     refreshData();
+    setIsHydrated(true);
   }, []);
 
   const switchProfile = (profileId: string) => {
@@ -55,6 +62,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         stores,
         selectedStoreId,
         isDemoMode: true,
+        isHydrated,
         switchProfile,
         switchStore,
         allProfiles,
