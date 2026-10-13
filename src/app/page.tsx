@@ -35,83 +35,63 @@ export default function HomePage() {
 
       {/* Hero Section */}
       <main className="max-w-5xl mx-auto px-6 py-16 flex-1 flex flex-col justify-center">
-        <div className="text-center max-w-xl mx-auto space-y-3 mb-12">
+        <div className="text-center max-w-xl mx-auto space-y-3 mb-10">
+          <span className="text-[11px] font-semibold tracking-wider uppercase text-[#888888] bg-[#F5F5F5] px-3 py-1 rounded-full">
+            Plaza Senayan Boutique (PS)
+          </span>
           <h2 className="text-2xl sm:text-3xl font-medium tracking-tight text-[#111111]">
             Retail Performance & Clienteling OS
           </h2>
           <p className="text-xs sm:text-sm text-[#666666] leading-relaxed">
-            Platform operasional multi-cabang untuk luxury fashion retail. Pemantauan Daily Sales Report
-            (DSR), kalkulasi KPI deterministik, analitik performa, dan CRM clienteling berbasis izin.
+            Sistem operasional butik luxury fashion: pemantauan pencapaian Daily Sales Report
+            (DSR), evaluasi KPI penjualan, pendampingan staf, dan CRM clienteling berbasis izin.
           </p>
         </div>
 
-        {/* 3 Role Quick Portals */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-12">
-          {/* 1. Area Manager */}
-          <div className="bg-white rounded-lg border border-[#EAEAEA] p-5 hover:border-[#CCCCCC] transition-colors flex flex-col justify-between">
+        {/* 2 Focused Role Portals */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto mb-12 w-full">
+          {/* 1. Store Manager */}
+          <div className="bg-white rounded-lg border border-[#EAEAEA] p-6 hover:border-[#CCCCCC] transition-colors flex flex-col justify-between shadow-sm">
             <div>
               <span className="text-[11px] font-semibold text-[#888888] uppercase tracking-wider block mb-1">
-                Eksekutif Area
+                Pimpinan Butik
               </span>
-              <h3 className="text-sm font-semibold text-[#111111] mb-1.5">
-                Area Manager
+              <h3 className="text-base font-semibold text-[#111111] mb-1.5">
+                Store Manager (Diana Putri)
               </h3>
-              <p className="text-xs text-[#666666] leading-relaxed mb-5">
-                Konsolidasi DSR seluruh gerai, perbandingan cabang, analisis pencapaian, dan ringkasan manajemen.
-              </p>
-            </div>
-            <Link
-              href="/area/dashboard"
-              onClick={() => switchProfile('20000000-0000-0000-0000-000000000001')}
-              className="w-full inline-flex items-center justify-center gap-1.5 bg-[#1A1A1A] hover:bg-[#333333] text-white text-xs font-medium py-2 rounded transition-colors"
-            >
-              <span>Buka Dashboard Area</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
-
-          {/* 2. Store Manager */}
-          <div className="bg-white rounded-lg border border-[#EAEAEA] p-5 hover:border-[#CCCCCC] transition-colors flex flex-col justify-between">
-            <div>
-              <span className="text-[11px] font-semibold text-[#888888] uppercase tracking-wider block mb-1">
-                Pimpinan Gerai
-              </span>
-              <h3 className="text-sm font-semibold text-[#111111] mb-1.5">
-                Store Manager
-              </h3>
-              <p className="text-xs text-[#666666] leading-relaxed mb-5">
-                Pencapaian target harian vs aktual, leaderboard tim SA, agenda janji temu, dan pencatatan coaching staf.
+              <p className="text-xs text-[#666666] leading-relaxed mb-6">
+                Evaluasi pencapaian target gerai vs aktual MTD, leaderboard tim SA, agenda janji temu tamu VIP, pencatatan coaching, dan impor DSR butik.
               </p>
             </div>
             <Link
               href="/store/dashboard"
               onClick={() => switchProfile('20000000-0000-0000-0000-000000000002')}
-              className="w-full inline-flex items-center justify-center gap-1.5 bg-[#1A1A1A] hover:bg-[#333333] text-white text-xs font-medium py-2 rounded transition-colors"
+              className="w-full inline-flex items-center justify-center gap-1.5 bg-[#1A1A1A] hover:bg-[#333333] text-white text-xs font-medium py-2.5 rounded transition-colors"
             >
-              <span>Buka Dashboard Gerai</span>
+              <span>Masuk Dashboard Store Manager</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
 
-          {/* 3. Sales Associate */}
-          <div className="bg-white rounded-lg border border-[#EAEAEA] p-5 hover:border-[#CCCCCC] transition-colors flex flex-col justify-between">
+          {/* 2. Sales Associate */}
+          <div className="bg-white rounded-lg border border-[#EAEAEA] p-6 hover:border-[#CCCCCC] transition-colors flex flex-col justify-between shadow-sm">
             <div>
               <span className="text-[11px] font-semibold text-[#888888] uppercase tracking-wider block mb-1">
                 Staf Penjualan
               </span>
-              <h3 className="text-sm font-semibold text-[#111111] mb-1.5">
-                Sales Associate (SA)
+              <h3 className="text-base font-semibold text-[#111111] mb-1.5">
+                Sales Associate (M. Ridwan Saputra)
               </h3>
-              <p className="text-xs text-[#666666] leading-relaxed mb-5">
-                Target personal, daftar customer yang ditugaskan, reminder ulang tahun, dan pembuatan draft WhatsApp.
+              <p className="text-xs text-[#666666] leading-relaxed mb-6">
+                Pantau target personal MTD, kelola tamu VIP portofolio, reminder momen ulang tahun, dan susun pesan WhatsApp clienteling berizin.
               </p>
             </div>
             <Link
               href="/sa/dashboard"
               onClick={() => switchProfile('20000000-0000-0000-0000-000000000003')}
-              className="w-full inline-flex items-center justify-center gap-1.5 bg-[#1A1A1A] hover:bg-[#333333] text-white text-xs font-medium py-2 rounded transition-colors"
+              className="w-full inline-flex items-center justify-center gap-1.5 bg-[#1A1A1A] hover:bg-[#333333] text-white text-xs font-medium py-2.5 rounded transition-colors"
             >
-              <span>Buka Workspace SA</span>
+              <span>Masuk Workspace Sales Associate</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>

@@ -23,7 +23,7 @@ export default function StoreDashboardPage() {
   const aiInsights = retailDataStore.getAiInsights(currentStore.id);
 
   const [coachingTopic, setCoachingTopic] = useState('');
-  const [selectedStaff, setSelectedStaff] = useState('Siti Rahma');
+  const [selectedStaff, setSelectedStaff] = useState('Muhamad Ridwan Saputra');
   const [coachingKpi, setCoachingKpi] = useState('UPT & Cross-Selling');
   const [coachingPlan, setCoachingPlan] = useState('');
   const [showCoachingModal, setShowCoachingModal] = useState(false);
@@ -134,19 +134,19 @@ export default function StoreDashboardPage() {
                   <tr className="hover:bg-[#FAFAFA]">
                     <td className="py-2.5 px-3 font-medium text-[#111111] flex items-center gap-2">
                       <div className="w-5 h-5 rounded-full bg-[#EAEAEA] text-[#444444] flex items-center justify-center font-medium text-[10px]">
-                        SR
+                        MR
                       </div>
-                      Siti Rahma
+                      Muhamad Ridwan Saputra
                     </td>
                     <td className="py-2.5 px-3 font-medium text-[#111111]">
-                      {formatIDR(kpi.actualSales * 0.54)}
+                      {formatIDR(kpi.actualSales * 0.52)}
                     </td>
                     <td className="py-2.5 px-3 text-[#666666]">
-                      {formatIDR((kpi.targetSales || 0) * 0.5)}
+                      {formatIDR((kpi.targetSales || 0) * 0.45)}
                     </td>
                     <td className="py-2.5 px-3">
                       <span className="bg-[#EBF7EE] text-[#1E7E34] px-1.5 py-0.5 rounded font-medium text-[11px]">
-                        98.4%
+                        102.5%
                       </span>
                     </td>
                     <td className="py-2.5 px-3 text-[#666666]">2 VIP (Clarissa, Michelle)</td>
@@ -156,25 +156,45 @@ export default function StoreDashboardPage() {
                   <tr className="hover:bg-[#FAFAFA]">
                     <td className="py-2.5 px-3 font-medium text-[#111111] flex items-center gap-2">
                       <div className="w-5 h-5 rounded-full bg-[#EAEAEA] text-[#444444] flex items-center justify-center font-medium text-[10px]">
-                        KW
+                        KS
                       </div>
-                      Kevin Wijaya
+                      Keisha Suhendra
                     </td>
                     <td className="py-2.5 px-3 font-medium text-[#111111]">
-                      {formatIDR(kpi.actualSales * 0.46)}
+                      {formatIDR(kpi.actualSales * 0.28)}
                     </td>
                     <td className="py-2.5 px-3 text-[#666666]">
-                      {formatIDR((kpi.targetSales || 0) * 0.5)}
+                      {formatIDR((kpi.targetSales || 0) * 0.3)}
                     </td>
                     <td className="py-2.5 px-3">
-                      <span className="bg-[#FFF8E6] text-[#B87A00] px-1.5 py-0.5 rounded font-medium text-[11px]">
-                        84.2%
+                      <span className="bg-[#EBF7EE] text-[#1E7E34] px-1.5 py-0.5 rounded font-medium text-[11px]">
+                        92.0%
                       </span>
                     </td>
                     <td className="py-2.5 px-3 text-[#666666]">2 VIP (Richard, Felicia)</td>
-                    <td className="py-2.5 px-3 text-[11px] text-[#B87A00] font-medium">
-                      Perlu Coaching
+                    <td className="py-2.5 px-3 text-[11px] text-[#1E7E34] font-medium">On Track</td>
+                  </tr>
+
+                  <tr className="hover:bg-[#FAFAFA]">
+                    <td className="py-2.5 px-3 font-medium text-[#111111] flex items-center gap-2">
+                      <div className="w-5 h-5 rounded-full bg-[#EAEAEA] text-[#444444] flex items-center justify-center font-medium text-[10px]">
+                        FK
+                      </div>
+                      Farah Khansa Nabilah
                     </td>
+                    <td className="py-2.5 px-3 font-medium text-[#111111]">
+                      {formatIDR(kpi.actualSales * 0.20)}
+                    </td>
+                    <td className="py-2.5 px-3 text-[#666666]">
+                      {formatIDR((kpi.targetSales || 0) * 0.25)}
+                    </td>
+                    <td className="py-2.5 px-3">
+                      <span className="bg-[#FFF8E6] text-[#B87A00] px-1.5 py-0.5 rounded font-medium text-[11px]">
+                        78.4%
+                      </span>
+                    </td>
+                    <td className="py-2.5 px-3 text-[#666666]">1 Tamu Baru</td>
+                    <td className="py-2.5 px-3 text-[11px] text-[#B87A00] font-medium">Perlu Coaching</td>
                   </tr>
                 </tbody>
               </table>
@@ -210,7 +230,7 @@ export default function StoreDashboardPage() {
                       </div>
                       <p className="text-[11px] text-[#666666] mt-0.5">{app.notes}</p>
                       <div className="mt-1.5 text-[10px] text-[#888888]">
-                        Staf penanggung jawab: Siti Rahma
+                        Staf penanggung jawab: M. Ridwan Saputra
                       </div>
                     </div>
                   ))}
@@ -286,8 +306,9 @@ export default function StoreDashboardPage() {
                   onChange={e => setSelectedStaff(e.target.value)}
                   className="w-full p-2 border border-[#EAEAEA] rounded bg-white text-[#111111]"
                 >
-                  <option value="Siti Rahma">Siti Rahma</option>
-                  <option value="Kevin Wijaya">Kevin Wijaya</option>
+                  <option value="Muhamad Ridwan Saputra">Muhamad Ridwan Saputra</option>
+                  <option value="Keisha Suhendra">Keisha Suhendra</option>
+                  <option value="Farah Khansa Nabilah">Farah Khansa Nabilah</option>
                 </select>
               </div>
 

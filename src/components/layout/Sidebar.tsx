@@ -18,7 +18,6 @@ export function Sidebar() {
   const { currentRole, currentProfile } = useAuth();
 
   const getDashboardHref = () => {
-    if (currentRole === 'area_manager' || currentRole === 'org_admin') return '/area/dashboard';
     if (currentRole === 'store_manager') return '/store/dashboard';
     return '/sa/dashboard';
   };
@@ -41,7 +40,7 @@ export function Sidebar() {
       href: '/import',
       icon: FileSpreadsheet,
       active: pathname === '/import',
-      allowedRoles: ['org_admin', 'area_manager', 'store_manager'],
+      allowedRoles: ['store_manager'],
     },
     {
       name: 'Tugas & Tindak Lanjut',
@@ -69,7 +68,7 @@ export function Sidebar() {
             <h1 className="text-xs font-semibold tracking-wider uppercase text-[#1A1A1A]">
               Maison de Luxe
             </h1>
-            <p className="text-[10px] text-[#888888]">Retail OS</p>
+            <p className="text-[10px] text-[#888888]">Plaza Senayan Boutique</p>
           </div>
         </div>
       </div>

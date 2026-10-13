@@ -36,9 +36,9 @@ class RetailDataStore {
   private interactions: ClientelingInteraction[] = [...DEMO_INTERACTIONS];
   private insights: AiInsight[] = [...DEMO_AI_INSIGHTS];
 
-  // Current session state
-  private currentProfileId: string = DEMO_PROFILES[0].id; // Default to Area Manager
-  private selectedStoreId: string = 'all'; // 'all' or specific store ID
+  // Current session state: Focused on Plaza Senayan Boutique
+  private currentProfileId: string = DEMO_PROFILES[1].id; // Default to Store Manager (Diana Putri)
+  private selectedStoreId: string = '10000000-0000-0000-0000-000000000003'; // Plaza Senayan (ST-PS-03)
 
   constructor() {
     // Note: Do not load localStorage synchronously here to prevent SSR hydration mismatch.

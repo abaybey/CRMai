@@ -593,10 +593,10 @@ export default function ImportPage() {
 
             <div className="pt-2 flex items-center justify-center gap-2">
               <a
-                href="/area/dashboard"
+                href="/store/dashboard"
                 className="px-4 py-1.5 bg-[#1A1A1A] text-white rounded text-xs font-medium hover:bg-[#333333]"
               >
-                Lihat Dashboard Performa
+                Lihat Dashboard Gerai
               </a>
               <button
                 type="button"
