@@ -182,33 +182,33 @@ class RetailDataStore {
   }
 
   // Customers Querying with strict Access Control
-  public getCustomers(): Customer[] {
-    const profile = this.getCurrentProfile();
+  public getCustomers(forProfile?: Profile): Customer[] {
+    const profile = forProfile || this.getCurrentProfile();
 
     if (profile.role === 'sales_associate') {
       // SA can ONLY see customers assigned to them
       if (profile.id === '20000000-0000-0000-0000-000000000003') {
-        // Siti Rahma
+        // Muhamad Ridwan Saputra
         return this.customers.filter(c => c.customer_ref === 'CUST-001' || c.customer_ref === 'CUST-002');
       } else if (profile.id === '20000000-0000-0000-0000-000000000004') {
-        // Kevin Wijaya
+        // Keisha Suhendra
         return this.customers.filter(c => c.customer_ref === 'CUST-003' || c.customer_ref === 'CUST-004');
       }
-      return [];
+      return this.customers.slice(0, 2);
     }
 
     // Area & Store Managers see all customers
     return [...this.customers];
   }
 
-  public getCustomerById(id: string): Customer | undefined {
-    const customers = this.getCustomers();
+  public getCustomerById(id: string, forProfile?: Profile): Customer | undefined {
+    const customers = this.getCustomers(forProfile);
     return customers.find(c => c.id === id);
   }
 
   // Tasks Management
-  public getTasks(): ClientelingTask[] {
-    const profile = this.getCurrentProfile();
+  public getTasks(forProfile?: Profile): ClientelingTask[] {
+    const profile = forProfile || this.getCurrentProfile();
 
     if (profile.role === 'sales_associate') {
       // Only personal tasks

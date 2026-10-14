@@ -5,6 +5,7 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { KpiCard } from '@/components/ui/KpiCard';
 import { useAuth } from '@/lib/auth-context';
 import { retailDataStore } from '@/lib/data-store';
+import { DEMO_PROFILES } from '@/lib/demo-data';
 import { formatIDR } from '@/lib/kpi';
 import { Gift, CheckCircle2, Calendar, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
@@ -12,13 +13,17 @@ import Link from 'next/link';
 export default function SalesAssociateDashboardPage() {
   const { currentProfile } = useAuth();
 
+  // In SA workspace, ensure deterministic profile resolution (primary SA Muhamad Ridwan Saputra on SSR)
+  const activeProfile =
+    currentProfile.role === 'sales_associate' ? currentProfile : DEMO_PROFILES[2];
+
   const personalActual = 485_000_000;
   const personalTarget = 500_000_000;
   const personalAchievement = (personalActual / personalTarget) * 100;
   const personalGap = personalTarget - personalActual;
 
-  const tasks = retailDataStore.getTasks();
-  const customers = retailDataStore.getCustomers();
+  const tasks = retailDataStore.getTasks(activeProfile);
+  const customers = retailDataStore.getCustomers(activeProfile);
 
   const [completedTaskIds, setCompletedTaskIds] = useState<Set<string>>(new Set());
   const [successMsg, setSuccessMsg] = useState('');
@@ -41,7 +46,7 @@ export default function SalesAssociateDashboardPage() {
 
   return (
     <AppLayout
-      title={`Workspace Penjualan — ${currentProfile.full_name.replace('[DEMO] ', '')}`}
+      title={`Workspace Penjualan — ${activeProfile.full_name.replace('[DEMO] ', '')}`}
       subtitle="Target individu, portofolio tamu, dan antrean tindak lanjut harian"
     >
       <div className="space-y-6">

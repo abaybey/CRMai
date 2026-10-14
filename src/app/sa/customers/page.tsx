@@ -22,7 +22,7 @@ import {
 function CustomersContent() {
   const searchParams = useSearchParams();
   const { currentProfile, stores } = useAuth();
-  const customers = retailDataStore.getCustomers();
+  const customers = retailDataStore.getCustomers(currentProfile);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTier, setSelectedTier] = useState<string>('all');
@@ -193,7 +193,9 @@ function CustomersContent() {
                 <option value="Gold">Gold</option>
               </select>
             </div>
-            <span className="text-xs text-[#888888]">{filteredCustomers.length} Tamu</span>
+            <span suppressHydrationWarning className="text-xs text-[#888888]">
+              {filteredCustomers.length} Tamu
+            </span>
           </div>
         </div>
 

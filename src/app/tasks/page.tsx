@@ -9,9 +9,9 @@ import { TaskStatus } from '@/types';
 import { Filter, CheckCircle2, Calendar, Clock, MessageSquare, Play } from 'lucide-react';
 
 export default function TasksPage() {
-  const { refreshData } = useAuth();
-  const tasks = retailDataStore.getTasks();
-  const customers = retailDataStore.getCustomers();
+  const { currentProfile, refreshData } = useAuth();
+  const tasks = retailDataStore.getTasks(currentProfile);
+  const customers = retailDataStore.getCustomers(currentProfile);
 
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
@@ -83,7 +83,7 @@ export default function TasksPage() {
             </div>
           </div>
 
-          <span className="text-xs text-[#888888] font-medium self-end sm:self-auto">
+          <span suppressHydrationWarning className="text-xs text-[#888888] font-medium self-end sm:self-auto">
             {filteredTasks.length} Tugas
           </span>
         </div>

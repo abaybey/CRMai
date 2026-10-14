@@ -29,6 +29,7 @@ export function KpiCard({
         <span className="text-[#666666] font-normal">{label}</span>
         {achievement !== null && achievement !== undefined && (
           <span
+            suppressHydrationWarning
             className={`text-[10px] sm:text-[11px] font-medium px-1.5 sm:px-2 py-0.5 rounded ${
               achievement >= 100
                 ? 'bg-[#EBF7EE] text-[#1E7E34]'
@@ -43,8 +44,14 @@ export function KpiCard({
       </div>
 
       <div className="mt-2 sm:mt-2.5">
-        <div className="text-lg sm:text-xl font-semibold text-[#111111] tracking-tight">{value}</div>
-        {subValue && <p className="text-[10px] sm:text-[11px] text-[#777777] mt-0.5">{subValue}</p>}
+        <div suppressHydrationWarning className="text-lg sm:text-xl font-semibold text-[#111111] tracking-tight">
+          {value}
+        </div>
+        {subValue && (
+          <p suppressHydrationWarning className="text-[10px] sm:text-[11px] text-[#777777] mt-0.5">
+            {subValue}
+          </p>
+        )}
       </div>
 
       {(target || trend !== null) && (

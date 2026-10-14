@@ -18,7 +18,7 @@ export default function StoreDashboardPage() {
     stores[0];
 
   const kpi = retailDataStore.getKpiSummary(currentStore.id);
-  const tasks = retailDataStore.getTasks();
+  const tasks = retailDataStore.getTasks(currentProfile);
   const appointments = retailDataStore.getAppointments(currentStore.id);
   const aiInsights = retailDataStore.getAiInsights(currentStore.id);
 
