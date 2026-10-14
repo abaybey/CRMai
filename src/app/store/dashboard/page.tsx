@@ -67,7 +67,7 @@ export default function StoreDashboardPage() {
         )}
 
         {/* Store Level KPI Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5">
           <KpiCard
             label="Net Sales Gerai (MTD)"
             value={formatIDR(kpi.actualSales)}
@@ -80,26 +80,26 @@ export default function StoreDashboardPage() {
             label="Kesenjangan Target (Gap)"
             value={formatIDR(kpi.salesGap)}
             subValue={
-              (kpi.salesGap || 0) > 0 ? 'Kekurangan omzet MTD' : 'Surplus omzet di atas target'
+              (kpi.salesGap || 0) > 0 ? 'Defisit MTD' : 'Surplus MTD'
             }
             achievement={kpi.salesAchievement}
           />
           <KpiCard
             label="Average Transaction Value"
             value={formatIDR(kpi.atv)}
-            subValue={`Total Transaksi: ${kpi.transactionCount || 0}`}
+            subValue={`Transaksi: ${kpi.transactionCount || 0}`}
           />
           <KpiCard
             label="Units Per Transaction (UPT)"
             value={formatDecimal(kpi.upt, 2)}
-            subValue={`Total Unit: ${kpi.unitsSold || 0} pcs`}
+            subValue={`Unit: ${kpi.unitsSold || 0} pcs`}
           />
         </div>
 
         {/* Staff Performance & Coaching Section */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
           {/* Staff Leaderboard */}
-          <div className="lg:col-span-2 bg-white rounded-lg border border-[#EAEAEA] p-4">
+          <div className="lg:col-span-2 bg-white rounded-lg border border-[#EAEAEA] p-3.5 sm:p-4">
             <div className="flex items-center justify-between mb-3.5 pb-2.5 border-b border-[#F5F5F5]">
               <div>
                 <h3 className="text-xs font-semibold text-[#111111] uppercase tracking-wider">
@@ -111,14 +111,80 @@ export default function StoreDashboardPage() {
               </div>
               <button
                 onClick={() => setShowCoachingModal(true)}
-                className="inline-flex items-center gap-1.5 bg-[#F5F5F5] hover:bg-[#EBEBEB] text-[#222222] text-xs font-medium px-2.5 py-1.5 rounded transition-colors"
+                className="inline-flex items-center gap-1.5 bg-[#F5F5F5] hover:bg-[#EBEBEB] text-[#222222] text-xs font-medium px-2.5 py-1.5 rounded transition-colors active:scale-95"
               >
                 <Plus className="w-3.5 h-3.5" />
-                Catat Coaching
+                <span>Coaching</span>
               </button>
             </div>
 
-            <div className="overflow-x-auto">
+            {/* Mobile View: SA Leaderboard Cards */}
+            <div className="block md:hidden space-y-2.5">
+              {[
+                {
+                  initial: 'MR',
+                  name: 'Muhamad Ridwan Saputra',
+                  sales: kpi.actualSales * 0.52,
+                  target: (kpi.targetSales || 0) * 0.45,
+                  achievement: '102.5%',
+                  status: 'On Track',
+                  statusColor: 'bg-[#EBF7EE] text-[#1E7E34]',
+                  guests: '2 VIP (Clarissa, Michelle)',
+                },
+                {
+                  initial: 'KS',
+                  name: 'Keisha Suhendra',
+                  sales: kpi.actualSales * 0.28,
+                  target: (kpi.targetSales || 0) * 0.3,
+                  achievement: '92.0%',
+                  status: 'On Track',
+                  statusColor: 'bg-[#EBF7EE] text-[#1E7E34]',
+                  guests: '2 VIP (Richard, Felicia)',
+                },
+                {
+                  initial: 'FK',
+                  name: 'Farah Khansa Nabilah',
+                  sales: kpi.actualSales * 0.2,
+                  target: (kpi.targetSales || 0) * 0.25,
+                  achievement: '78.4%',
+                  status: 'Perlu Coaching',
+                  statusColor: 'bg-[#FFF8E6] text-[#B87A00]',
+                  guests: '1 Tamu Baru',
+                },
+              ].map(sa => (
+                <div key={sa.name} className="p-3 bg-[#FAFAFA] rounded-md border border-[#EAEAEA] space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-full bg-[#EAEAEA] text-[#333333] flex items-center justify-center font-medium text-[10px]">
+                        {sa.initial}
+                      </div>
+                      <span className="text-xs font-semibold text-[#111111]">{sa.name}</span>
+                    </div>
+                    <span className={`${sa.statusColor} px-2 py-0.5 rounded text-[10px] font-medium`}>
+                      {sa.achievement}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 text-xs pt-1 border-t border-[#EEEEEE]">
+                    <div>
+                      <span className="text-[10px] text-[#888888] block">Sales MTD</span>
+                      <span className="font-semibold text-[#111111]">{formatIDR(sa.sales)}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-[#888888] block">Target</span>
+                      <span className="text-[#666666]">{formatIDR(sa.target)}</span>
+                    </div>
+                  </div>
+
+                  <div className="text-[10px] text-[#777777]">
+                    Tamu: <span className="text-[#444444] font-medium">{sa.guests}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop View: SA Leaderboard Table */}
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead className="bg-[#FAFAFA] text-[#666666] border-b border-[#EAEAEA] text-[11px] font-medium">
                   <tr>
@@ -289,8 +355,8 @@ export default function StoreDashboardPage() {
 
       {/* Coaching Modal */}
       {showCoachingModal && (
-        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg max-w-md w-full p-5 shadow-lg border border-[#EAEAEA]">
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className="bg-white rounded-t-xl sm:rounded-lg max-w-md w-full p-4 sm:p-5 shadow-2xl border border-[#EAEAEA] max-h-[90vh] overflow-y-auto">
             <h3 className="text-xs font-semibold text-[#111111] uppercase tracking-wider mb-1">
               Catat Sesi Coaching Manajerial
             </h3>

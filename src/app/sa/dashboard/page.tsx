@@ -55,11 +55,11 @@ export default function SalesAssociateDashboardPage() {
         )}
 
         {/* Personal Performance Header */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5">
           <KpiCard
             label="Pencapaian Pribadi (MTD)"
             value={formatIDR(personalActual)}
-            subValue={`Target Bulan: ${formatIDR(personalTarget)}`}
+            subValue={`Target: ${formatIDR(personalTarget)}`}
             target={formatIDR(personalTarget)}
             achievement={personalAchievement}
             trend={14.2}
@@ -68,18 +68,18 @@ export default function SalesAssociateDashboardPage() {
           <KpiCard
             label="Kekurangan Target (Gap)"
             value={formatIDR(personalGap)}
-            subValue="Sisa target menuju 100%"
+            subValue="Sisa target 100%"
             achievement={personalAchievement}
           />
           <KpiCard
-            label="Tamu Portofolio Ditugaskan"
+            label="Tamu Portofolio"
             value={`${customers.length} Tamu VIP`}
-            subValue="Akses khusus terverifikasi"
+            subValue="Akses khusus aktif"
           />
           <KpiCard
             label="Progress Follow-Up"
             value={`${completionRate.toFixed(0)}% Selesai`}
-            subValue={`${completedCount} dari ${totalTasks} tugas selesai`}
+            subValue={`${completedCount} dari ${totalTasks} tugas`}
             trend={completionRate}
             trendLabel="progress"
           />
@@ -88,7 +88,7 @@ export default function SalesAssociateDashboardPage() {
         {/* Action Priority Queue */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
           {/* Main Tasks Queue */}
-          <div className="lg:col-span-2 bg-white rounded-lg border border-[#EAEAEA] p-4">
+          <div className="lg:col-span-2 bg-white rounded-lg border border-[#EAEAEA] p-3.5 sm:p-4">
             <div className="flex items-center justify-between mb-3.5 pb-2.5 border-b border-[#F5F5F5]">
               <div>
                 <h3 className="text-xs font-semibold text-[#111111] uppercase tracking-wider">
@@ -143,20 +143,20 @@ export default function SalesAssociateDashboardPage() {
                         )}
                       </div>
 
-                      <div className="flex items-center gap-2 shrink-0">
+                      <div className="flex items-center gap-2 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-[#EAEAEA]">
                         <Link
                           href={`/sa/customers?action=draft&customerId=${task.customer_id}`}
-                          className="inline-flex items-center gap-1.5 bg-[#1A1A1A] hover:bg-[#333333] text-white text-xs font-medium px-2.5 py-1.5 rounded transition-colors"
+                          className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 bg-[#1A1A1A] hover:bg-[#333333] active:scale-95 text-white text-xs font-medium px-3 py-2 sm:py-1.5 rounded transition-colors"
                         >
                           <MessageCircle className="w-3.5 h-3.5" />
-                          Draft WA
+                          <span>Draft WA</span>
                         </Link>
                         <button
                           onClick={() => handleCompleteTask(task.id)}
-                          className="inline-flex items-center gap-1 bg-white border border-[#EAEAEA] hover:bg-[#F5F5F5] text-[#333333] text-xs font-medium px-2.5 py-1.5 rounded"
+                          className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1 bg-white border border-[#EAEAEA] hover:bg-[#F5F5F5] active:scale-95 text-[#333333] text-xs font-medium px-3 py-2 sm:py-1.5 rounded"
                         >
                           <CheckCircle2 className="w-3.5 h-3.5 text-[#1E7E34]" />
-                          Selesai
+                          <span>Selesai</span>
                         </button>
                       </div>
                     </div>

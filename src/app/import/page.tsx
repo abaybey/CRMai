@@ -234,17 +234,17 @@ export default function ImportPage() {
     >
       <div className="max-w-3xl mx-auto space-y-5">
         {/* Progress Stepper */}
-        <div className="bg-white p-3.5 rounded-lg border border-[#EAEAEA]">
+        <div className="bg-white p-3 sm:p-3.5 rounded-lg border border-[#EAEAEA]">
           <div className="flex items-center justify-between text-xs">
             {[
-              { num: 1, label: 'Upload File' },
-              { num: 2, label: 'Pemetaan Kolom' },
-              { num: 3, label: 'Preview & Validasi' },
-              { num: 4, label: 'Selesai' },
+              { num: 1, label: 'Upload File', short: 'Upload' },
+              { num: 2, label: 'Pemetaan Kolom', short: 'Peta' },
+              { num: 3, label: 'Preview & Validasi', short: 'Validasi' },
+              { num: 4, label: 'Selesai', short: 'Selesai' },
             ].map(s => (
               <div
                 key={s.num}
-                className={`flex items-center gap-1.5 ${
+                className={`flex items-center gap-1 sm:gap-1.5 ${
                   step === s.num
                     ? 'text-[#111111] font-medium'
                     : step > s.num
@@ -253,7 +253,7 @@ export default function ImportPage() {
                 }`}
               >
                 <span
-                  className={`w-5 h-5 rounded-full flex items-center justify-center text-[11px] ${
+                  className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] sm:text-[11px] shrink-0 ${
                     step === s.num
                       ? 'bg-[#111111] text-white'
                       : step > s.num
@@ -263,7 +263,8 @@ export default function ImportPage() {
                 >
                   {step > s.num ? '✓' : s.num}
                 </span>
-                <span>{s.label}</span>
+                <span className="hidden sm:inline text-xs">{s.label}</span>
+                <span className="inline sm:hidden text-[10px]">{s.short}</span>
               </div>
             ))}
           </div>
@@ -474,8 +475,8 @@ export default function ImportPage() {
 
         {/* STEP 3: Preview */}
         {step === 3 && validationSummary && (
-          <div className="bg-white rounded-lg border border-[#EAEAEA] p-5 space-y-4">
-            <div className="flex items-center justify-between pb-2.5 border-b border-[#F0F0F0]">
+          <div className="bg-white rounded-lg border border-[#EAEAEA] p-4 sm:p-5 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-2.5 border-b border-[#F0F0F0] gap-2">
               <div>
                 <h3 className="text-xs font-semibold text-[#111111] uppercase tracking-wider">
                   Hasil Validasi Data DSR
@@ -488,7 +489,7 @@ export default function ImportPage() {
                 <button
                   type="button"
                   onClick={handleDownloadErrorReport}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded border border-[#F5C6CB] bg-[#FDF0ED] text-[#C0392B] text-xs"
+                  className="inline-flex items-center gap-1 px-2.5 py-1.5 sm:py-1 rounded border border-[#F5C6CB] bg-[#FDF0ED] text-[#C0392B] text-xs self-start sm:self-auto"
                 >
                   <Download className="w-3 h-3" />
                   Unduh Error Report ({validationSummary.invalidRows.length})
@@ -497,23 +498,23 @@ export default function ImportPage() {
             </div>
 
             {/* Validation Metrics Summary */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-              <div className="p-3 bg-[#FAFAFA] border border-[#EAEAEA] rounded">
-                <span className="text-[10px] text-[#777777] uppercase block">Baris Valid</span>
-                <div className="text-base font-semibold text-[#1E7E34] mt-0.5">
-                  {validationSummary.validRows.length} Baris
+            <div className="grid grid-cols-3 gap-2 sm:gap-2.5">
+              <div className="p-2.5 sm:p-3 bg-[#FAFAFA] border border-[#EAEAEA] rounded">
+                <span className="text-[9px] sm:text-[10px] text-[#777777] uppercase block">Baris Valid</span>
+                <div className="text-sm sm:text-base font-semibold text-[#1E7E34] mt-0.5">
+                  {validationSummary.validRows.length} <span className="hidden sm:inline font-normal text-xs text-[#555555]">Baris</span>
                 </div>
               </div>
-              <div className="p-3 bg-[#FAFAFA] border border-[#EAEAEA] rounded">
-                <span className="text-[10px] text-[#777777] uppercase block">Baris Bermasalah</span>
-                <div className="text-base font-semibold text-[#C0392B] mt-0.5">
-                  {validationSummary.invalidRows.length} Baris
+              <div className="p-2.5 sm:p-3 bg-[#FAFAFA] border border-[#EAEAEA] rounded">
+                <span className="text-[9px] sm:text-[10px] text-[#777777] uppercase block">Masalah</span>
+                <div className="text-sm sm:text-base font-semibold text-[#C0392B] mt-0.5">
+                  {validationSummary.invalidRows.length} <span className="hidden sm:inline font-normal text-xs text-[#555555]">Baris</span>
                 </div>
               </div>
-              <div className="p-3 bg-[#FAFAFA] border border-[#EAEAEA] rounded">
-                <span className="text-[10px] text-[#777777] uppercase block">Duplikasi</span>
-                <div className="text-base font-semibold text-[#B87A00] mt-0.5">
-                  {validationSummary.duplicateCount} Duplikat
+              <div className="p-2.5 sm:p-3 bg-[#FAFAFA] border border-[#EAEAEA] rounded">
+                <span className="text-[9px] sm:text-[10px] text-[#777777] uppercase block">Duplikasi</span>
+                <div className="text-sm sm:text-base font-semibold text-[#B87A00] mt-0.5">
+                  {validationSummary.duplicateCount} <span className="hidden sm:inline font-normal text-xs text-[#555555]">Item</span>
                 </div>
               </div>
             </div>

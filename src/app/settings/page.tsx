@@ -130,11 +130,12 @@ export default function SettingsPage() {
           <div className="flex items-center gap-2 mb-3 pb-2 border-b border-[#F0F0F0]">
             <Users className="w-4 h-4 text-[#666666]" />
             <h3 className="text-xs font-semibold text-[#111111] uppercase tracking-wider">
-              Hak Akses & Pengguna
+              Hak Akses & Pengguna ({allProfiles.length})
             </h3>
           </div>
 
-          <div className="overflow-x-auto">
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead className="bg-[#FAFAFA] text-[#666666] text-[11px] font-medium border-b border-[#EAEAEA]">
                 <tr>
@@ -165,6 +166,29 @@ export default function SettingsPage() {
                 ))}
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile Cards View */}
+          <div className="block md:hidden space-y-2.5">
+            {allProfiles.map(p => (
+              <div
+                key={p.id}
+                className="p-3 rounded-lg border border-[#EAEAEA] bg-[#FAFAFA] space-y-1.5"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold text-xs text-[#111111]">
+                    {p.full_name.replace('[DEMO] ', '')}
+                  </span>
+                  <span className="text-[10px] uppercase font-medium px-2 py-0.5 rounded bg-white border border-[#EAEAEA] text-[#444444]">
+                    {p.role.replace('_', ' ')}
+                  </span>
+                </div>
+                <div className="text-[11px] text-[#666666]">{p.email}</div>
+                <div className="text-[10px] text-[#888888]">
+                  Cakupan: {p.role === 'area_manager' ? 'Seluruh Gerai' : 'Plaza Senayan Boutique'}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -208,7 +232,7 @@ export default function SettingsPage() {
         </div>
 
         {/* Reset Demo Data Action */}
-        <div className="p-4 rounded-lg border border-[#EAEAEA] bg-white flex items-center justify-between">
+        <div className="p-4 rounded-lg border border-[#EAEAEA] bg-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div>
             <h4 className="text-xs font-semibold text-[#111111]">
               Reset Data Demo
@@ -220,7 +244,7 @@ export default function SettingsPage() {
           <button
             type="button"
             onClick={handleResetData}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded border border-[#EAEAEA] text-[#333333] hover:bg-[#F5F5F5] text-xs font-medium"
+            className="inline-flex items-center gap-1.5 px-3 py-2 sm:py-1.5 rounded border border-[#EAEAEA] text-[#333333] hover:bg-[#F5F5F5] text-xs font-medium shrink-0"
           >
             <RotateCcw className="w-3.5 h-3.5" />
             Reset Data

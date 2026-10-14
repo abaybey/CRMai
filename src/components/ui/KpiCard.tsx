@@ -24,12 +24,12 @@ export function KpiCard({
   trendLabel = 'vs periode lalu',
 }: KpiCardProps) {
   return (
-    <div className="p-4 rounded-lg bg-white border border-[#EAEAEA] transition-colors hover:border-[#D5D5D5]">
-      <div className="flex items-center justify-between text-xs">
+    <div className="p-3.5 sm:p-4 rounded-lg bg-white border border-[#EAEAEA] transition-colors hover:border-[#D5D5D5]">
+      <div className="flex items-center justify-between text-[11px] sm:text-xs">
         <span className="text-[#666666] font-normal">{label}</span>
         {achievement !== null && achievement !== undefined && (
           <span
-            className={`text-[11px] font-medium px-2 py-0.5 rounded ${
+            className={`text-[10px] sm:text-[11px] font-medium px-1.5 sm:px-2 py-0.5 rounded ${
               achievement >= 100
                 ? 'bg-[#EBF7EE] text-[#1E7E34]'
                 : achievement >= 85
@@ -42,13 +42,13 @@ export function KpiCard({
         )}
       </div>
 
-      <div className="mt-2.5">
-        <div className="text-xl font-semibold text-[#111111] tracking-tight">{value}</div>
-        {subValue && <p className="text-[11px] text-[#777777] mt-0.5">{subValue}</p>}
+      <div className="mt-2 sm:mt-2.5">
+        <div className="text-lg sm:text-xl font-semibold text-[#111111] tracking-tight">{value}</div>
+        {subValue && <p className="text-[10px] sm:text-[11px] text-[#777777] mt-0.5">{subValue}</p>}
       </div>
 
       {(target || trend !== null) && (
-        <div className="mt-3 pt-2.5 border-t border-[#F5F5F5] flex items-center justify-between text-[11px] text-[#777777]">
+        <div className="mt-2.5 sm:mt-3 pt-2 sm:pt-2.5 border-t border-[#F5F5F5] flex items-center justify-between text-[10px] sm:text-[11px] text-[#777777]">
           {target && (
             <span>
               Target: <strong className="font-medium text-[#333333]">{target}</strong>

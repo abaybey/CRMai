@@ -10,10 +10,17 @@ import {
   CheckSquare,
   Settings,
   ChevronRight,
+  X,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 
-export function Sidebar() {
+export function Sidebar({
+  mobileOpen = false,
+  onClose,
+}: {
+  mobileOpen?: boolean;
+  onClose?: () => void;
+}) {
   const pathname = usePathname();
   const { currentRole, currentProfile } = useAuth();
 
@@ -57,74 +64,101 @@ export function Sidebar() {
   ];
 
   return (
-    <aside className="w-60 bg-white text-[#1A1A1A] flex flex-col border-r border-[#EAEAEA] min-h-screen select-none shrink-0">
-      {/* Brand Header */}
-      <div className="p-5 border-b border-[#F0F0F0]">
-        <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded bg-[#1A1A1A] flex items-center justify-center text-white font-medium text-xs tracking-wider">
-            M
+    <>
+      {/* Mobile Backdrop */}
+      {mobileOpen && (
+        <div
+          onClick={onClose}
+          className="fixed inset-0 bg-black/40 z-40 md:hidden transition-opacity"
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Sidebar Container */}
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 w-64 bg-white text-[#1A1A1A] flex flex-col border-r border-[#EAEAEA] min-h-screen select-none transition-transform duration-200 ease-in-out md:static md:w-60 md:translate-x-0 md:flex ${
+          mobileOpen ? 'translate-x-0 shadow-xl' : '-translate-x-full md:translate-x-0'
+        }`}
+      >
+        {/* Brand Header */}
+        <div className="p-4 sm:p-5 border-b border-[#F0F0F0] flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded bg-[#1A1A1A] flex items-center justify-center text-white font-medium text-xs tracking-wider">
+              M
+            </div>
+            <div>
+              <h1 className="text-xs font-semibold tracking-wider uppercase text-[#1A1A1A]">
+                Maison de Luxe
+              </h1>
+              <p className="text-[10px] text-[#888888]">Plaza Senayan Boutique</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-xs font-semibold tracking-wider uppercase text-[#1A1A1A]">
-              Maison de Luxe
-            </h1>
-            <p className="text-[10px] text-[#888888]">Plaza Senayan Boutique</p>
+
+          {/* Mobile Close Button */}
+          <button
+            type="button"
+            onClick={onClose}
+            className="md:hidden p-1.5 rounded-md text-[#777777] hover:bg-[#F5F5F5] hover:text-[#111111]"
+            aria-label="Tutup menu"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+          <div className="px-3 pt-2 pb-1.5 text-[10px] font-medium tracking-wider text-[#999999] uppercase">
+            Menu
+          </div>
+
+          {navItems.map(item => {
+            if (item.allowedRoles && !item.allowedRoles.includes(currentRole)) {
+              return null;
+            }
+
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.name}
+                href={item.href}
+                onClick={onClose}
+                className={`flex items-center justify-between px-3 py-2.5 sm:py-2 rounded-md text-xs font-medium transition-colors ${
+                  item.active
+                    ? 'bg-[#F4F4F5] text-[#111111]'
+                    : 'text-[#666666] hover:text-[#111111] hover:bg-[#FAFAFA]'
+                }`}
+              >
+                <div className="flex items-center gap-2.5">
+                  <Icon
+                    className={`w-4 h-4 ${
+                      item.active ? 'text-[#111111]' : 'text-[#888888]'
+                    }`}
+                  />
+                  <span>{item.name}</span>
+                </div>
+                {item.active && <ChevronRight className="w-3.5 h-3.5 text-[#888888]" />}
+              </Link>
+            );
+          })}
+        </nav>
+
+        {/* User Info Footprint */}
+        <div className="p-3.5 border-t border-[#F0F0F0] bg-[#FAFAFA]">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-full bg-[#EEEEEE] border border-[#E0E0E0] flex items-center justify-center text-[11px] font-medium text-[#444444]">
+              {currentProfile.full_name.charAt(7) || 'U'}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-medium text-[#1A1A1A] truncate">
+                {currentProfile.full_name.replace('[DEMO] ', '')}
+              </p>
+              <p className="text-[10px] text-[#888888] capitalize truncate">
+                {currentRole.replace('_', ' ')}
+              </p>
+            </div>
           </div>
         </div>
-      </div>
-
-      {/* Navigation */}
-      <nav className="flex-1 p-3 space-y-1">
-        <div className="px-3 pt-2 pb-1.5 text-[10px] font-medium tracking-wider text-[#999999] uppercase">
-          Menu
-        </div>
-
-        {navItems.map(item => {
-          if (item.allowedRoles && !item.allowedRoles.includes(currentRole)) {
-            return null;
-          }
-
-          const Icon = item.icon;
-          return (
-            <Link
-              key={item.name}
-              href={item.href}
-              className={`flex items-center justify-between px-3 py-2 rounded-md text-xs font-medium transition-colors ${
-                item.active
-                  ? 'bg-[#F4F4F5] text-[#111111]'
-                  : 'text-[#666666] hover:text-[#111111] hover:bg-[#FAFAFA]'
-              }`}
-            >
-              <div className="flex items-center gap-2.5">
-                <Icon
-                  className={`w-4 h-4 ${
-                    item.active ? 'text-[#111111]' : 'text-[#888888]'
-                  }`}
-                />
-                <span>{item.name}</span>
-              </div>
-              {item.active && <ChevronRight className="w-3.5 h-3.5 text-[#888888]" />}
-            </Link>
-          );
-        })}
-      </nav>
-
-      {/* User Info Footprint */}
-      <div className="p-3.5 border-t border-[#F0F0F0] bg-[#FAFAFA]">
-        <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-full bg-[#EEEEEE] border border-[#E0E0E0] flex items-center justify-center text-[11px] font-medium text-[#444444]">
-            {currentProfile.full_name.charAt(7) || 'U'}
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium text-[#1A1A1A] truncate">
-              {currentProfile.full_name.replace('[DEMO] ', '')}
-            </p>
-            <p className="text-[10px] text-[#888888] capitalize truncate">
-              {currentRole.replace('_', ' ')}
-            </p>
-          </div>
-        </div>
-      </div>
-    </aside>
+      </aside>
+    </>
   );
 }

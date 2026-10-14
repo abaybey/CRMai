@@ -197,8 +197,88 @@ function CustomersContent() {
           </div>
         </div>
 
-        {/* Customer Directory Table */}
-        <div className="bg-white rounded-lg border border-[#EAEAEA] overflow-hidden">
+        {/* Mobile View: Clean Customer Cards */}
+        <div className="block md:hidden space-y-2.5">
+          {filteredCustomers.length === 0 ? (
+            <div className="bg-white rounded-lg border border-[#EAEAEA] p-6 text-center text-xs text-[#888888]">
+              Tidak ada tamu yang sesuai dengan pencarian atau filter.
+            </div>
+          ) : (
+            filteredCustomers.map(cust => {
+              const isOptedOut = cust.do_not_contact || cust.consent_status === 'opted_out';
+
+              return (
+                <div
+                  key={`mobile-${cust.id}`}
+                  className="bg-white rounded-lg border border-[#EAEAEA] p-3.5 space-y-2.5 shadow-sm"
+                >
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h4 className="text-sm font-semibold text-[#111111]">
+                        {cust.full_name.replace('[DEMO] ', '')}
+                      </h4>
+                      <span className="text-[10px] text-[#888888]">{cust.customer_ref}</span>
+                    </div>
+                    <span className="bg-[#F5F5F5] text-[#333333] px-2 py-0.5 rounded text-[10px] font-medium">
+                      {cust.tier || 'Regular'}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 text-xs pt-1 border-t border-[#F5F5F5]">
+                    <div>
+                      <span className="text-[10px] text-[#888888] block">WhatsApp</span>
+                      <span className="text-[#333333] font-medium">{cust.phone || '-'}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-[#888888] block">Total Belanja</span>
+                      <span className="text-[#111111] font-semibold">
+                        {cust.total_spend ? formatIDR(cust.total_spend) : 'N/A'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {cust.birthday && (
+                    <div className="flex items-center gap-1.5 text-[11px] text-[#555555] bg-[#FAFAFA] p-1.5 rounded border border-[#F0F0F0]">
+                      <Gift className="w-3.5 h-3.5 text-[#888888]" />
+                      <span>Ulang Tahun: {cust.birthday}</span>
+                    </div>
+                  )}
+
+                  <div className="flex items-center justify-between pt-1">
+                    <div>
+                      {isOptedOut ? (
+                        <span className="inline-flex items-center gap-1 bg-[#FDF0ED] text-[#C0392B] px-2 py-0.5 rounded text-[10px]">
+                          <ShieldAlert className="w-3 h-3" />
+                          Do Not Contact
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 bg-[#EBF7EE] text-[#1E7E34] px-2 py-0.5 rounded text-[10px]">
+                          <ShieldCheck className="w-3 h-3" />
+                          Opted-In
+                        </span>
+                      )}
+                    </div>
+
+                    <button
+                      onClick={() => handleOpenDraft(cust)}
+                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium transition-colors ${
+                        isOptedOut
+                          ? 'bg-[#F5F5F5] text-[#A0A0A0] cursor-not-allowed'
+                          : 'bg-[#1A1A1A] hover:bg-[#333333] text-white active:scale-95'
+                      }`}
+                    >
+                      <MessageCircle className="w-3.5 h-3.5" />
+                      <span>Outreach WA</span>
+                    </button>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        {/* Desktop View: Customer Directory Table */}
+        <div className="hidden md:block bg-white rounded-lg border border-[#EAEAEA] overflow-hidden">
           <table className="w-full text-left text-xs">
             <thead className="bg-[#FAFAFA] text-[#666666] border-b border-[#EAEAEA] text-[11px] font-medium">
               <tr>
@@ -278,8 +358,8 @@ function CustomersContent() {
 
       {/* WhatsApp Draft Generator Modal */}
       {showDraftModal && selectedCustomer && (
-        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-lg max-w-xl w-full p-5 shadow-lg border border-[#EAEAEA] my-6">
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className="bg-white rounded-t-xl sm:rounded-lg max-w-xl w-full p-4 sm:p-5 shadow-2xl border border-[#EAEAEA] max-h-[92vh] flex flex-col animate-in slide-in-from-bottom duration-200 sm:animate-none">
             <div className="flex items-center justify-between pb-2.5 border-b border-[#F0F0F0] mb-3.5">
               <div>
                 <h3 className="text-xs font-semibold text-[#111111] uppercase tracking-wider">
